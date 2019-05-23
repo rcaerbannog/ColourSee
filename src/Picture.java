@@ -176,13 +176,16 @@ public class Picture extends SimplePicture
       if (northPixel != null && northPixel.getColor().equals(target)) {
         //northPixel.setColor(replace);
         queue.add(northPixel);
-      } else if (southPixel != null && southPixel.getColor().equals(target)) {
+      }
+      if (southPixel != null && southPixel.getColor().equals(target)) {
         //southPixel.setColor(replace);
         queue.add(southPixel);
-      } else if (eastPixel != null && eastPixel.getColor().equals(target)) {
+      }
+      if (eastPixel != null && eastPixel.getColor().equals(target)) {
         //eastPixel.setColor(replace);
         queue.add(eastPixel);
-      } else if (westPixel != null && westPixel.getColor().equals(target)) {
+      }
+      if (westPixel != null && westPixel.getColor().equals(target)) {
         //westPixel.setColor(replace);
         queue.add(westPixel);
       }
