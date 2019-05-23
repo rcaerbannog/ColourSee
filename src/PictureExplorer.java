@@ -47,6 +47,14 @@ public class PictureExplorer implements MouseMotionListener, ActionListener, Mou
   
   /** the zoom factor (amount to zoom) */
   private double zoomFactor;
+
+  //Colour palette
+  private ColorPalette palette;
+
+  private int paletteRows;
+  private int paletteCols;
+  private Color[] colors;
+  private String[] labels;
   
   /**
    * Public constructor 
@@ -72,25 +80,20 @@ public class PictureExplorer implements MouseMotionListener, ActionListener, Mou
   }
   
   /**
-   * Method to create and initialize the picture frame
+   * Creates the JFrame and sets everything up
    */
-  private void createAndInitPictureFrame()
+  private void createWindow()
   {
+    // create the picture frame and initialize it
     pictureFrame = new JFrame(); // create the JFrame
     pictureFrame.setResizable(true);  // allow the user to resize it
     pictureFrame.getContentPane().setLayout(new BorderLayout()); // use border layout
     pictureFrame.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE); // when close stop
     pictureFrame.setTitle(picture.getTitle());
     
-  }
-  
-  /**
-   * Create and initialize the scrolling image
-   */
-  private void createAndInitScrollingImage()
-  {
+    //creates the scrollpane for the picture
     scrollPane = new JScrollPane();
-    
+
     BufferedImage bimg = picture.getBufferedImage();
     imageDisplay = new ImageDisplay(bimg);
     imageDisplay.addMouseMotionListener(this);
@@ -98,20 +101,25 @@ public class PictureExplorer implements MouseMotionListener, ActionListener, Mou
     imageDisplay.setToolTipText("Click a mouse button on a pixel to see the pixel information");
     scrollPane.setViewportView(imageDisplay);
     pictureFrame.getContentPane().add(scrollPane, BorderLayout.CENTER);
-  }
-  
-  /**
-   * Creates the JFrame and sets everything up
-   */
-  private void createWindow()
-  {
-    // create the picture frame and initialize it
-    createAndInitPictureFrame();
-    
-    //creates the scrollpane for the picture
-    createAndInitScrollingImage();
+
+    //creates the color palette
+    paletteRows = 2;
+    paletteCols = 4;
+
+    labels = new String[8];
+    labels[3] = "4";
+    labels[4] = "5";
+
+    colors = new Color[8];
+    for (int i = 0; i < 8; i++){
+      colors[i] = new Color(0, i*32, 0);
+    }
+
+    palette = new ColorPalette(paletteRows, paletteCols, colors, labels);
+    pictureFrame.add(palette, BorderLayout.SOUTH);
     
     // show the picture in the frame at the size it needs to be
+
     pictureFrame.pack();
     pictureFrame.setVisible(true);
   }
@@ -382,17 +390,19 @@ public class PictureExplorer implements MouseMotionListener, ActionListener, Mou
     int pictureX = (int) (cursorX / zoomFactor);
     int pictureY = (int) (cursorY / zoomFactor);
 
-    Color changeColor = new Color(0, 255, 0);
+    Color changeColor = palette.getSelectedColor();
     // display the information for this x and y
     picture.fill(pictureX, pictureY, changeColor);
     this.repaint();
   }
 
   /**
-   * Test Main.  It will explore the beach 
+   * Test Main.
    */
   public static void main( String args[])
   {
+
+
     System.out.println("Enter the filename of the picture you want to include.");
     Scanner sc = new Scanner(System.in);
     String imageFile = sc.nextLine();
