@@ -27,6 +27,7 @@ public interface DigitalPicture
   public Pixel[][] getPixels2D(); // get 2-D array of pixels in row-major order
   public void load(Image image); // load the image into the picture
   public boolean load(String fileName); // load the picture from a file
-  public void show(); // show the picture
+  public void show(); // show the picture 
+  public void explore(); // explore the picture
   public boolean write(String fileName); // write out a file
 }

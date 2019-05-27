@@ -1,0 +1,1 @@
+FileChooser.getMediaDirectory() controls how files are chosen.

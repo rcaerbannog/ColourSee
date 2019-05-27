@@ -411,6 +411,15 @@ public class SimplePicture implements DigitalPicture
    else 
      this.hide();
  }
+
+ /**
+  * Method to open a picture explorer on a copy (in memory) of this 
+  * simple picture
+  */
+ public void explore()
+ {
+
+ }
  
  /**
   * Method to force the picture to repaint itself.  This is very

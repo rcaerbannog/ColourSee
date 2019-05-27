@@ -1,6 +1,10 @@
 import java.awt.*;
+import java.awt.font.*;
+import java.awt.geom.*;
 import java.awt.image.BufferedImage;
+import java.text.*;
 import java.util.*;
+import java.util.List; // resolves problem with java.awt.List and java.util.List
 
 /**
  * A class that represents a picture.  This class inherits from 
@@ -93,8 +97,98 @@ public class Picture extends SimplePicture
       }
     }
   }
+  
+  /** Method that mirrors the picture around a 
+    * vertical mirror in the center of the picture
+    * from left to right */
+  public void mirrorVertical()
+  {
+    Pixel[][] pixels = this.getPixels2D();
+    Pixel leftPixel = null;
+    Pixel rightPixel = null;
+    int width = pixels[0].length;
+    for (int row = 0; row < pixels.length; row++)
+    {
+      for (int col = 0; col < width / 2; col++)
+      {
+        leftPixel = pixels[row][col];
+        rightPixel = pixels[row][width - 1 - col];
+        rightPixel.setColor(leftPixel.getColor());
+      }
+    } 
+  }
+  
+  /** Mirror just part of a picture of a temple */
+  public void mirrorTemple()
+  {
+    int mirrorPoint = 276;
+    Pixel leftPixel = null;
+    Pixel rightPixel = null;
+    int count = 0;
+    Pixel[][] pixels = this.getPixels2D();
+    
+    // loop through the rows
+    for (int row = 27; row < 97; row++)
+    {
+      // loop from 13 to just before the mirror point
+      for (int col = 13; col < mirrorPoint; col++)
+      {
+        
+        leftPixel = pixels[row][col];      
+        rightPixel = pixels[row]                       
+                         [mirrorPoint - col + mirrorPoint];
+        rightPixel.setColor(leftPixel.getColor());
+      }
+    }
+  }
+  
+  /** copy from the passed fromPic to the
+    * specified startRow and startCol in the
+    * current picture
+    * @param fromPic the picture to copy from
+    * @param startRow the start row to copy to
+    * @param startCol the start col to copy to
+    */
+  public void copy(Picture fromPic, 
+                 int startRow, int startCol)
+  {
+    Pixel fromPixel = null;
+    Pixel toPixel = null;
+    Pixel[][] toPixels = this.getPixels2D();
+    Pixel[][] fromPixels = fromPic.getPixels2D();
+    for (int fromRow = 0, toRow = startRow; 
+         fromRow < fromPixels.length &&
+         toRow < toPixels.length; 
+         fromRow++, toRow++)
+    {
+      for (int fromCol = 0, toCol = startCol; 
+           fromCol < fromPixels[0].length &&
+           toCol < toPixels[0].length;  
+           fromCol++, toCol++)
+      {
+        fromPixel = fromPixels[fromRow][fromCol];
+        toPixel = toPixels[toRow][toCol];
+        toPixel.setColor(fromPixel.getColor());
+      }
+    }   
+  }
 
-
+  /** Method to create a collage of several pictures */
+  public void createCollage()
+  {
+    Picture flower1 = new Picture("flower1.jpg");
+    Picture flower2 = new Picture("flower2.jpg");
+    this.copy(flower1,0,0);
+    this.copy(flower2,100,0);
+    this.copy(flower1,200,0);
+    Picture flowerNoBlue = new Picture(flower2);
+    flowerNoBlue.zeroBlue();
+    this.copy(flowerNoBlue,300,0);
+    this.copy(flower1,400,0);
+    this.copy(flower2,500,0);
+    this.mirrorVertical();
+    this.write("collage.jpg");
+  }
   
   
   /** Method to show large changes in color 
@@ -122,61 +216,17 @@ public class Picture extends SimplePicture
       }
     }
   }
-
-  /**
-   * Fills a region of a picture that is the same colour as itself
-   * @param pictureX The x coordinate of the starting pixel
-   * @param pictureY The y coordinate of the starting pixel
-   * @param replace The Color to replace each pixel with
+  
+  
+  /* Main method for testing - each class in Java can have a main 
+   * method 
    */
-  public void fill(int pictureX, int pictureY, Color replace){
-    //Create a queue of pixels to operate on
-    ArrayList<Pixel> queue = new ArrayList<Pixel>(10000);
-    //Note: when accessing pixels, pixels.length is y,
-    Pixel[][] pixels = this.getPixels2D();
-    Pixel pixel = pixels[pictureY][pictureX];
-    Color target = pixel.getColor();
-
-    //Check if this pixel's colour is the same as the starting colour and not the same as the ending colour
-    //If change Color equals target Color then there is no need to do the fill
-
-    if (pixel.getColor().equals(replace))
-      return;
-    //Change the colour of this pixel
-    pixel.setColor(replace);
-    //Add the starting pixel to the queue
-    queue.add(pixel);
-
-    //Operate on any pixels in the queue until the queue is empty
-    while (queue.size() > 0) {
-      Pixel p = queue.remove(queue.size() - 1);
-      p.setColor(replace);
-      int pixelX = p.getX();
-      int pixelY = p.getY();
-
-      Pixel northPixel = (pixelY > 0) ? pixels[pixelY - 1][pixelX] : null;
-      Pixel southPixel = (pixelY < pixels.length-1) ? pixels[pixelY + 1][pixelX] : null;
-      Pixel westPixel = (pixelX > 0) ? pixels[pixelY][pixelX - 1] : null;
-      Pixel eastPixel = (pixelX < pixels[0].length-1) ? pixels[pixelY][pixelX + 1] : null;
-
-      //If pixel is the same Color as the target Color, change it to the new Color and add it to the queue
-      if (northPixel != null && northPixel.getColor().equals(target)) {
-        //northPixel.setColor(replace);
-        queue.add(northPixel);
-      }
-      if (southPixel != null && southPixel.getColor().equals(target)) {
-        //southPixel.setColor(replace);
-        queue.add(southPixel);
-      }
-      if (eastPixel != null && eastPixel.getColor().equals(target)) {
-        //eastPixel.setColor(replace);
-        queue.add(eastPixel);
-      }
-      if (westPixel != null && westPixel.getColor().equals(target)) {
-        //westPixel.setColor(replace);
-        queue.add(westPixel);
-      }
-    }
+  public static void main(String[] args) 
+  {
+    Picture beach = new Picture("beach.jpg");
+    beach.explore();
+    beach.zeroBlue();
+    beach.explore();
   }
   
 } // this } is the end of class Picture, put all new methods before this

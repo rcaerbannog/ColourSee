@@ -1,6 +1,10 @@
 import java.awt.*;
+import java.awt.font.*;
+import java.awt.geom.*;
 import java.awt.image.BufferedImage;
+import java.text.*;
 import java.util.*;
+import java.util.List; // resolves problem with java.awt.List and java.util.List
 
 /**
  * A class that represents a picture.  This class inherits from 
@@ -79,6 +83,16 @@ public class Picture extends SimplePicture
       + " width " + getWidth();
     return output;
     
+  }
+
+  /**
+   * Method to open a picture explorer on a copy (in memory) of this
+   * simple picture
+   */
+  public void explore()
+  {
+    // create a copy of the current picture and explore it
+    new PictureExplorer(new Picture(this));
   }
   
   /** Method to set the blue to 0 */
@@ -159,24 +173,33 @@ public class Picture extends SimplePicture
       Pixel westPixel = (pixelX > 0) ? pixels[pixelY][pixelX - 1] : null;
       Pixel eastPixel = (pixelX < pixels[0].length-1) ? pixels[pixelY][pixelX + 1] : null;
 
+
       //If pixel is the same Color as the target Color, change it to the new Color and add it to the queue
-      if (northPixel != null && northPixel.getColor().equals(target)) {
+      if (northPixel != null && northPixel.getColor().equals(target))
         //northPixel.setColor(replace);
         queue.add(northPixel);
-      }
-      if (southPixel != null && southPixel.getColor().equals(target)) {
-        //southPixel.setColor(replace);
-        queue.add(southPixel);
-      }
-      if (eastPixel != null && eastPixel.getColor().equals(target)) {
+      if (eastPixel != null && eastPixel.getColor().equals(target))
         //eastPixel.setColor(replace);
         queue.add(eastPixel);
-      }
-      if (westPixel != null && westPixel.getColor().equals(target)) {
+      if (westPixel != null && westPixel.getColor().equals(target))
         //westPixel.setColor(replace);
         queue.add(westPixel);
-      }
+      if (southPixel != null && southPixel.getColor().equals(target))
+      //southPixel.setColor(replace);
+      queue.add(southPixel);
+
     }
+  }
+  
+  /* Main method for testing - each class in Java can have a main 
+   * method 
+   */
+  public static void main(String[] args) 
+  {
+    Picture beach = new Picture("beach.jpg");
+    beach.explore();
+    beach.zeroBlue();
+    beach.explore();
   }
   
 } // this } is the end of class Picture, put all new methods before this

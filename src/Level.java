@@ -1,3 +1,6 @@
+import java.io.*;
+import java.net.URL;
+import java.net.URLDecoder;
 import java.util.Scanner;
 import java.awt.*;
 import java.awt.event.*;
@@ -17,9 +20,20 @@ import javax.swing.border.*;
  * @author Keith McDermottt, gte047w@cc.gatech.edu
  * @author Barb Ericson ericson@cc.gatech.edu
  */
-public class PictureExplorer implements MouseMotionListener, ActionListener, MouseListener
+public class Level implements MouseMotionListener, ActionListener, MouseListener
 {
- 
+  //Level information
+  private String levelName;
+
+  private int regions;
+
+  private int[] regionPointsX;
+
+  private int[] regionPointsY;
+
+  private Color[] regionColors;
+
+
   // current indicies
   /** row index */
   private int rowIndex = 0; 
@@ -44,7 +58,7 @@ public class PictureExplorer implements MouseMotionListener, ActionListener, Mou
   
   /** The image display */
   private ImageDisplay imageDisplay;
-  
+
   /** the zoom factor (amount to zoom) */
   private double zoomFactor;
 
@@ -58,16 +72,125 @@ public class PictureExplorer implements MouseMotionListener, ActionListener, Mou
   
   /**
    * Public constructor 
-   * @param picture the picture to explore
+   * @param levelFolder the level directory
    */
-  public PictureExplorer(Picture picture)
-  {
-    // set the fields
-    this.picture=picture;
-    zoomFactor=1;
-    
-    // create the window and set things up
+  public Level(String levelFolder){
+    String levelFile = getLevelDirectory(levelFolder) + "levelInfo.dat";
+    String imageFile = null;
+    try{
+      BufferedReader in = new BufferedReader(new FileReader(levelFile));
+      levelName = in.readLine();
+      imageFile = getLevelDirectory(levelFolder) + in.readLine();
+      regions = Integer.parseInt(in.readLine());
+      in.readLine();
+
+      regionPointsX = new int[regions];
+      regionPointsY = new int[regions];
+      regionColors = new Color[regions];
+
+      //Read in region keypoint colours and coordinates
+      for (int i = 0; i < regions; i++){
+        String[] coords = in.readLine().split(",");
+        String[] rgb = in.readLine().split(",");
+        in.readLine();
+
+        regionPointsX[i] = Integer.parseInt(coords[0]);
+        regionPointsY[i] = Integer.parseInt(coords[1]);
+
+        int red = Integer.parseInt(rgb[0]);
+        int green = Integer.parseInt(rgb[1]);
+        int blue = Integer.parseInt(rgb[2]);
+        regionColors[i] = new Color(red, green, blue);
+      }
+      in.close();
+    }
+    catch (Exception e){
+      System.out.println("Error in level file.");
+      System.exit(0);
+    }
+
+    this.picture = new Picture(imageFile);
+    zoomFactor = 1;
+
+    //Create the colour palette
+    String paletteFile = getLevelDirectory(levelFolder) + "palette.dat";
+    try{
+      BufferedReader in = new BufferedReader(new FileReader(paletteFile));
+      paletteRows = Integer.parseInt(in.readLine());
+      paletteCols = Integer.parseInt(in.readLine());
+      int noOfColors = Integer.parseInt(in.readLine());
+      if (noOfColors > paletteRows * paletteCols) throw new Exception();
+
+      colors = new Color[noOfColors];
+      labels = new String[noOfColors];
+
+      for (int i = 0; i < noOfColors; i++){
+        String[] tokens = in.readLine().split(" ");
+        int red = Integer.parseInt(tokens[0]);
+        int blue = Integer.parseInt(tokens[1]);
+        int green = Integer.parseInt(tokens[2]);
+        colors[i] = new Color(red, blue, green);
+        labels[i] = (tokens.length > 3)? tokens[3] : null;
+      }
+    }
+    catch (Exception e){
+      System.out.println("Error in palette file.");
+      System.exit(0);
+    }
+    palette = new ColorPalette(paletteRows, paletteCols, colors, labels);
+
+    //Create window
     createWindow();
+
+    System.out.println("SEP THREAD");
+
+    //Pause, for testing.
+    try{
+      Thread.sleep(20000);
+    }catch(Exception e){}
+
+    results();
+
+  }
+
+  public void results(){
+    int correct = regions;
+    for (int i = 0; i < regions; i++){
+      Pixel p = picture.getPixel(regionPointsX[i], regionPointsY[i]);
+      if (!p.getColor().equals(colors[i])) correct--;
+    }
+
+    System.out.println("You got " + correct + "/" + regions + " correct");
+  }
+
+  /**
+   * Method to get the directory for the media
+   * @return the media directory
+   */
+  public static String getLevelDirectory(String level)
+  {
+    String path = "../levels/" + level + "/";
+    String directory = null;
+    boolean done = false;
+    File dirFile = null;
+
+    // try to find the images directory
+    try {
+      // get the URL for where we loaded this class
+      Class currClass = Class.forName("Level");
+      URL classURL = currClass.getResource("Level.class");
+      URL fileURL = new URL(classURL,path);
+      directory = fileURL.getPath();
+      directory = URLDecoder.decode(directory, "UTF-8");
+      dirFile = new File(directory);
+      if (dirFile.exists()) {
+        //setMediaPath(directory);
+        return directory;
+      }
+    } catch (Exception ex) {
+    }
+
+    return directory;
   }
   
   /**
@@ -102,22 +225,9 @@ public class PictureExplorer implements MouseMotionListener, ActionListener, Mou
     scrollPane.setViewportView(imageDisplay);
     pictureFrame.getContentPane().add(scrollPane, BorderLayout.CENTER);
 
-    //creates the color palette
-    paletteRows = 2;
-    paletteCols = 4;
-
-    labels = new String[8];
-    labels[3] = "4";
-    labels[4] = "5";
-
-    colors = new Color[8];
-    for (int i = 0; i < 8; i++){
-      colors[i] = new Color(0, i*32, 0);
-    }
-
-    palette = new ColorPalette(paletteRows, paletteCols, colors, labels);
+    //Adds palette
     pictureFrame.add(palette, BorderLayout.SOUTH);
-    
+
     // show the picture in the frame at the size it needs to be
 
     pictureFrame.pack();
@@ -169,29 +279,6 @@ public class PictureExplorer implements MouseMotionListener, ActionListener, Mou
       // move the viewport upper left point
       viewport.scrollRectToVisible(new Rectangle(viewX,viewY,rectWidth,rectHeight));
     }
-  }
-  
-  /**
-   * Zooms in the on picture by scaling the image.  
-   * It is extremely memory intensive.
-   * @param factor the amount to zoom by
-   */
-  public void zoom(double factor)
-  {
-    // save the current zoom factor
-    zoomFactor = factor;
-    
-    // calculate the new width and height and get an image that size
-    int width = (int) (picture.getWidth()*zoomFactor);
-    int height = (int) (picture.getHeight()*zoomFactor);
-    BufferedImage bimg = picture.getBufferedImage();
-    
-    // set the scroll image icon to the new image
-    imageDisplay.setImage(bimg.getScaledInstance(width, height, Image.SCALE_DEFAULT));
-    imageDisplay.setCurrentX((int) (colIndex * zoomFactor));
-    imageDisplay.setCurrentY((int) (rowIndex * zoomFactor));
-    imageDisplay.revalidate();
-    checkScroll();  // check if need to reposition scroll
   }
   
   /**
@@ -401,13 +488,13 @@ public class PictureExplorer implements MouseMotionListener, ActionListener, Mou
    */
   public static void main( String args[])
   {
-
-
-    System.out.println("Enter the filename of the picture you want to include.");
+    System.out.println("Enter the folder name of the level you want to test.");
     Scanner sc = new Scanner(System.in);
-    String imageFile = sc.nextLine();
-    Picture pix = new Picture(imageFile);
-    pix.explore();
+    String level = sc.nextLine();
+    sc.close();
+
+    new Level(level);
+
   }
 
 }
