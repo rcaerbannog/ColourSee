@@ -8,7 +8,8 @@
 <?import javafx.scene.text.Font?>
 
 
-<AnchorPane maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="404.0" prefWidth="621.0" xmlns="http://javafx.com/javafx/8.0.172-ea" xmlns:fx="http://javafx.com/fxml/1">
+<AnchorPane maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="404.0" prefWidth="621.0"
+            xmlns="http://javafx.com/javafx/8.0.172-ea" xmlns:fx="http://javafx.com/fxml/1" fx:controller="SplashScreen">
    <children>
       <GridPane layoutX="157.0" layoutY="108.0" prefHeight="188.0" prefWidth="293.0">
         <columnConstraints>
@@ -22,17 +23,20 @@
           <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
         </rowConstraints>
          <children>
-            <Button mnemonicParsing="false" prefHeight="26.0" prefWidth="104.0" text="Start" GridPane.columnIndex="1">
+            <Button mnemonicParsing="false" prefHeight="26.0" prefWidth="104.0"
+                    onAction="#handleStartButtonAction" text="Start" GridPane.columnIndex="1">
                <font>
                   <Font name="Curlz MT" size="12.0" />
                </font>
             </Button>
-            <Button mnemonicParsing="false" prefHeight="28.0" prefWidth="104.0" text="Options" GridPane.columnIndex="1" GridPane.rowIndex="1">
+            <Button mnemonicParsing="false" prefHeight="28.0" prefWidth="104.0"
+                    onAction="#handleOptionsButtonAction" text="Options" GridPane.columnIndex="1" GridPane.rowIndex="1">
                <font>
                   <Font name="Curlz MT" size="12.0" />
                </font>
             </Button>
-            <Button mnemonicParsing="false" prefHeight="26.0" prefWidth="104.0" text="Quit" GridPane.columnIndex="1" GridPane.rowIndex="2">
+            <Button mnemonicParsing="false" prefHeight="26.0" prefWidth="104.0"
+                    onAction="#handleQuitButtonAction" text="Quit" GridPane.columnIndex="1" GridPane.rowIndex="2">
                <font>
                   <Font name="Curlz MT" size="12.0" />
                </font>

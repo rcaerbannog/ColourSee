@@ -106,6 +106,7 @@ public class Level implements MouseMotionListener, ActionListener, MouseListener
     }
     catch (Exception e){
       System.out.println("Error in level file.");
+      e.printStackTrace();
       System.exit(0);
     }
 
@@ -141,8 +142,6 @@ public class Level implements MouseMotionListener, ActionListener, MouseListener
 
     //Create window
     createWindow();
-
-    System.out.println("SEP THREAD");
 
     //Pause, for testing.
     try{
@@ -297,10 +296,7 @@ public class Level implements MouseMotionListener, ActionListener, MouseListener
    * Called when the mouse is dragged (button held down and moved)
    * @param e the mouse event
    */
-  public void mouseDragged(MouseEvent e)
-  {
-    displayPixelInformation(e);
-  }
+  public void mouseDragged(MouseEvent e) {}
   
   /**
    * Method to check if the given x and y are in the picture
@@ -318,99 +314,12 @@ public class Level implements MouseMotionListener, ActionListener, MouseListener
     
     return result;
   }
-  
-  /**
-   * Method to display the pixel information from the passed x and y but
-   * also converts x and y from strings
-   * @param xString the x value as a string from the user
-   * @param yString the y value as a string from the user
-   */
-  public void displayPixelInformation(String xString, String yString)
-  {
-    int x = -1;
-    int y = -1;
-    try {
-      x = Integer.parseInt(xString);
-      y = Integer.parseInt(yString);
-    } catch (Exception ex) {
-    }
-    
-    if (x >= 0 && y >= 0) {
-      displayPixelInformation(x,y);
-    }
-  }
-  
-  /**
-   * Method to display pixel information for the passed x and y
-   * @param pictureX the x value in the picture
-   * @param pictureY the y value in the picture
-   */
-  private void displayPixelInformation(int pictureX, int pictureY)
-  {
-    // check that this x and y are in range
-    if (isLocationInPicture(pictureX, pictureY))
-    {
-      // save the current x and y index
-      colIndex = pictureX;
-      rowIndex = pictureY;
-      
-      // get the pixel at the x and y
-      Pixel pixel = new Pixel(picture,colIndex,rowIndex);
-      
-      // set the values based on the pixel
-      System.out.println("PIXEL INFO");
-      System.out.println(colIndex);
-      System.out.println(rowIndex);
-      System.out.println("R: " + pixel.getRed());
-      System.out.println("G: " + pixel.getGreen());
-      System.out.println("B: " + pixel.getBlue());
-    } 
-    else
-    {
-      clearInformation();
-    }
-    
-    // notify the image display of the current x and y
-    imageDisplay.setCurrentX((int) (colIndex * zoomFactor));
-    imageDisplay.setCurrentY((int) (rowIndex * zoomFactor));
-  }
-  
-  /**
-   * Method to display pixel information based on a mouse event
-   * @param e a mouse event
-   */
-  private void displayPixelInformation(MouseEvent e)
-  {
-    
-    // get the cursor x and y
-    int cursorX = e.getX();
-    int cursorY = e.getY();
-    
-    // get the x and y in the original (not scaled image)
-    int pictureX = (int) (cursorX / zoomFactor);
-    int pictureY = (int) (cursorY / zoomFactor);
-    
-    // display the information for this x and y
-    displayPixelInformation(pictureX,pictureY);
-    
-  }
-  
-  /**
-   * Method to clear the labels and current color and reset the 
-   * current index to -1
-   */
-  private void clearInformation()
-  {
-    colIndex = -1;
-    rowIndex = -1;
-  }
-  
+
   /**
    * Method called when the mouse is moved with no buttons down
    * @param e the mouse event
    */
-  public void mouseMoved(MouseEvent e)
-  {}
+  public void mouseMoved(MouseEvent e) {}
   
   /**
    * Method called when the mouse is clicked
@@ -425,41 +334,34 @@ public class Level implements MouseMotionListener, ActionListener, MouseListener
    * Method called when the mouse button is pushed down
    * @param e the mouse event
    */ 
-  public void mousePressed(MouseEvent e){ displayPixelInformation(e);}
+  public void mousePressed(MouseEvent e){}
   
   /**
    * Method called when the mouse button is released
    * @param e the mouse event
    */
-  public void mouseReleased(MouseEvent e)
-  {
-  }
+  public void mouseReleased(MouseEvent e) {}
   
   /**
    * Method called when the component is entered (mouse moves over it)
    * @param e the mouse event
    */
-  public void mouseEntered(MouseEvent e)
-  {
-  }
+  public void mouseEntered(MouseEvent e) {}
   
   /**
    * Method called when the mouse moves over the component
    * @param e the mouse event
    */
-  public void mouseExited(MouseEvent e)
-  {
-  }
+  public void mouseExited(MouseEvent e) {}
 
-  
+
   /**
    * Controls the zoom menu bar
    *
-   * @param a the ActionEvent 
+   * @param a the ActionEvent
    */
   public void actionPerformed(ActionEvent a)
   {
-    
     if(a.getActionCommand().equals("Update"))
     {
       this.repaint();
