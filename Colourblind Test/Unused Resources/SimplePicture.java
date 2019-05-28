@@ -748,4 +748,4 @@ public class SimplePicture implements DigitalPicture
    return output;
  }
 
-} // end of SimplePicture class
+} // end of Picture class
