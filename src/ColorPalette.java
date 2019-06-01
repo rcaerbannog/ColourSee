@@ -8,7 +8,7 @@ public class ColorPalette extends JPanel{
     public ColorPalette(int rows, int cols, Color[] buttonColors, String[] labels){
         super();
 
-        setLayout(new GridLayout(rows, cols));
+        setLayout(new GridLayout(rows, cols, 2, 2));
 
         //Construct a grid of ColorButtons
         //With given Color and Text

@@ -13,7 +13,8 @@ public class ColorButton extends Button implements MouseListener{
         this.parentPalette = parentPalette;
 
         setBackground(buttonColor);
-        setSize(20, 20);
+        setPreferredSize(new Dimension(20, 20));
+        setMaximumSize(new Dimension(20, 20));
         addMouseListener(this);
 
     }

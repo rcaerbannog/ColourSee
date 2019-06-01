@@ -208,10 +208,45 @@ public class Level implements MouseMotionListener, ActionListener, MouseListener
   {
     // create the picture frame and initialize it
     pictureFrame = new JFrame(); // create the JFrame
-    pictureFrame.setResizable(true);  // allow the user to resize it
-    pictureFrame.getContentPane().setLayout(new BorderLayout()); // use border layout
+    pictureFrame.setResizable(false);  // allow the user to resize it
+    pictureFrame.getContentPane().setLayout(new BorderLayout(10, 10)); // use border layout
     pictureFrame.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE); // when close stop
     pictureFrame.setTitle(picture.getTitle());
+
+    //Creates the GUI on top
+    JPanel topRow = new JPanel();
+    topRow.setLayout(new GridLayout(1, 5));
+    //Quit button
+    JButton quitButton = new JButton("BACK TO LEVELS");
+
+    //Time passed label
+    JPanel timeLabelPanel = new JPanel();
+    timeLabelPanel.setAlignmentX(JPanel.CENTER_ALIGNMENT);
+    timeLabelPanel.setAlignmentY(JPanel.BOTTOM_ALIGNMENT);
+    JLabel timeLabel = new JLabel("TIME PASSED: 0");
+    timeLabelPanel.add(timeLabel);
+
+    //Submit button submits the current image for evaluation
+    JButton submitButton = new JButton("SUBMIT");
+
+    //Regions left button: how many blank regions are left. (What is the blank colour?)
+    JPanel regionsLabelPanel = new JPanel();
+    regionsLabelPanel.setAlignmentX(JPanel.CENTER_ALIGNMENT);
+    regionsLabelPanel.setAlignmentY(JPanel.BOTTOM_ALIGNMENT);
+    JLabel regionsLabel = new JLabel("100 REGIONS UNFILLED");
+    regionsLabelPanel.add(regionsLabel);
+
+    //Reset button. May change to general menu later on.
+    //Alternatively, add a menu bar to the window
+    JButton resetButton = new JButton("RESET");
+
+    topRow.add(quitButton);
+    topRow.add(timeLabelPanel);
+    topRow.add(submitButton);
+    topRow.add(regionsLabelPanel);
+    topRow.add(resetButton);
+
+
     
     //creates the scrollpane for the picture
     scrollPane = new JScrollPane();
@@ -220,12 +255,20 @@ public class Level implements MouseMotionListener, ActionListener, MouseListener
     imageDisplay = new ImageDisplay(bimg);
     imageDisplay.addMouseMotionListener(this);
     imageDisplay.addMouseListener(this);
-    imageDisplay.setToolTipText("Click a mouse button on a pixel to see the pixel information");
+    imageDisplay.setToolTipText("Click on the image to fill the region with a selected colour.");
     scrollPane.setViewportView(imageDisplay);
-    pictureFrame.getContentPane().add(scrollPane, BorderLayout.CENTER);
 
     //Adds palette
-    pictureFrame.add(palette, BorderLayout.SOUTH);
+    JPanel paletteBox = new JPanel();
+    paletteBox.setLayout(new FlowLayout());
+    paletteBox.setAlignmentX(JPanel.CENTER_ALIGNMENT);
+    paletteBox.setAlignmentY(JPanel.CENTER_ALIGNMENT);
+    paletteBox.add(palette);
+
+    //Add to the picture frame each component
+    pictureFrame.add(topRow, BorderLayout.NORTH);
+    pictureFrame.add(scrollPane, BorderLayout.CENTER);
+    pictureFrame.add(paletteBox, BorderLayout.SOUTH);
 
     // show the picture in the frame at the size it needs to be
 
