@@ -4,15 +4,17 @@ import java.awt.event.MouseListener;
 import javax.swing.*;
 public class ColorButton extends Button implements MouseListener{
     private Color buttonColor;
-    ColorPalette parentPalette;
+    private Color appearColor;
+    private ColorPalette parentPalette;
 
-    public ColorButton(String label, Color c, ColorPalette parentPalette){
+    public ColorButton(String label, Color buttonColor, Color appearColor, ColorPalette parentPalette){
         super(label);
 
-        this.buttonColor = c;
+        this.buttonColor = buttonColor;
+        this.appearColor = appearColor;
         this.parentPalette = parentPalette;
 
-        setBackground(buttonColor);
+        setBackground(appearColor);
         setPreferredSize(new Dimension(20, 20));
         setMaximumSize(new Dimension(20, 20));
         addMouseListener(this);
@@ -25,10 +27,8 @@ public class ColorButton extends Button implements MouseListener{
      */
     @Override
     public void mouseClicked(MouseEvent e){
-        System.out.println(buttonColor);
         parentPalette.setSelectedColor(buttonColor);
         parentPalette.repaint();
-
     }
 
     /**

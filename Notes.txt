@@ -1,6 +1,15 @@
 FileChooser.getMediaDirectory() controls how files are chosen.
 If there is time, re-implement the ZOOM bar in Level or the level creator
 
+TODO:
+-Add JDialog with text at beginning of level, if there is text.
+    Add method to read text from level.dat.
+-Add info to palette file to allow reading of appearColors for each buttons
+
+
+
+
+
 SPARE CODE
 ------------------------
 

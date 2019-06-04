@@ -5,7 +5,7 @@ public class ColorPalette extends JPanel{
 
     private ColorButton[][] buttons;
 
-    public ColorPalette(int rows, int cols, Color[] buttonColors, String[] labels){
+    public ColorPalette(int rows, int cols, Color[] buttonColors, Color[] hiddenColors, String[] labels){
         super();
 
         setLayout(new GridLayout(rows, cols, 2, 2));
@@ -14,10 +14,10 @@ public class ColorPalette extends JPanel{
         //With given Color and Text
         for (int i = 0; i < buttonColors.length; i++){
             String label = (labels != null)? labels[i] : "";
-            this.add(new ColorButton(label, buttonColors[i], this));
+            this.add(new ColorButton(label, buttonColors[i], hiddenColors[i],this));
         }
 
-        selectedColor = new Color(0, 0, 0);
+        selectedColor = buttonColors[0];
     }
 
     public void setSelectedColor(Color c){

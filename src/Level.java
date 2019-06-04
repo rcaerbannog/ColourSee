@@ -1,3 +1,7 @@
+import graphics.ButtonMenu;
+
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
 import java.io.*;
 import java.net.URL;
 import java.net.URLDecoder;
@@ -33,6 +37,10 @@ public class Level implements MouseMotionListener, ActionListener, MouseListener
 
   private Color[] regionColors;
 
+  //Program flow constants
+  public static final int MAIN_MENU = 3;
+  public static final int RESTART = 2;
+  public static final int LEVELS = 1;
 
   // current indicies
   /** row index */
@@ -68,13 +76,21 @@ public class Level implements MouseMotionListener, ActionListener, MouseListener
   private int paletteRows;
   private int paletteCols;
   private Color[] colors;
+  private Color[] appearColors;
   private String[] labels;
+
+  int buttonPress = -1;
+
+  /**
+   * Public constructor
+   */
+  public Level(){}
   
   /**
    * Public constructor 
    * @param levelFolder the level directory
    */
-  public Level(String levelFolder){
+  public int runGame(String levelFolder){
     String levelFile = getLevelDirectory(levelFolder) + "levelInfo.dat";
     String imageFile = null;
     try{
@@ -123,7 +139,10 @@ public class Level implements MouseMotionListener, ActionListener, MouseListener
       if (noOfColors > paletteRows * paletteCols) throw new Exception();
 
       colors = new Color[noOfColors];
+
       labels = new String[noOfColors];
+
+      appearColors = new Color[noOfColors];
 
       for (int i = 0; i < noOfColors; i++){
         String[] tokens = in.readLine().split(" ");
@@ -138,28 +157,100 @@ public class Level implements MouseMotionListener, ActionListener, MouseListener
       System.out.println("Error in palette file.");
       System.exit(0);
     }
-    palette = new ColorPalette(paletteRows, paletteCols, colors, labels);
+
+
+    palette = new ColorPalette(paletteRows, paletteCols, colors, appearColors, labels);
 
     //Create window
     createWindow();
 
-    //Pause, for testing.
+    //
     try{
       Thread.sleep(20000);
     }catch(Exception e){}
 
-    results();
+    try{
+      while (buttonPress != -1){
+        Thread.sleep(10);
+      }
+      if (buttonPress == 0){
+        return LEVELS;
+      }
+      else if (buttonPress == 1){
+        return results();
+      }
+      else if (buttonPress == 2){
+        return RESTART;
+      }
+    }catch(Exception e){return -1;}
+
+    return 0;
 
   }
 
-  public void results(){
+  //Create new JDialog with the results
+  public int results(){
     int correct = regions;
     for (int i = 0; i < regions; i++){
       Pixel p = picture.getPixel(regionPointsX[i], regionPointsY[i]);
       if (!p.getColor().equals(colors[i])) correct--;
     }
 
-    System.out.println("You got " + correct + "/" + regions + " correct");
+    //Create dialog with options
+    //NEXT LEVEL
+    //RESTART
+    //LEVELS
+    //MAIN MENU
+    JDialog resultsDialog = new JDialog (pictureFrame, "Results");
+
+    String resultsText = ("You got " + correct + "/" + regions + " correct");
+
+    //These buttons could also be used for a general level thing
+    String[] options = {"Levels", "Restart Level", "Main Menu"};
+    int[] values = {1, 2, 3};
+    ButtonMenu menu = new ButtonMenu(200, 100, ButtonMenu.VERTICAL_BOX, options, values, 1);
+
+    resultsDialog.setDefaultCloseOperation (JDialog.DO_NOTHING_ON_CLOSE);
+    resultsDialog.getContentPane ().add (menu);
+
+
+    final Object selectedOption;
+    menu.addPropertyChangeListener (
+            new PropertyChangeListener()
+            {
+              public void propertyChange (PropertyChangeEvent e)
+              {
+                String prop = e.getPropertyName ();
+
+                if (resultsDialog.isVisible ()
+                        //&& (e.getSource () == resultsDialog)
+                        && (prop.equals ("selectedValue")))
+                {
+                  //If you were going to check something
+                  //before closing the window, you'd do
+                  //it here.
+                  resultsDialog.setVisible (false);
+
+                }
+              }
+            }
+    );
+
+
+
+    resultsDialog.pack ();
+
+    resultsDialog.setResizable (false);
+    resultsDialog.setModal (true);
+    //setModal pauses current execution until the JDialog is closed
+
+    resultsDialog.setLocationRelativeTo (pictureFrame);
+    //addPropertyChangeListener (new ValuePropertyHandler (dialog));
+
+    resultsDialog.setVisible (true);
+    //Get the option that is chosen in the dialog
+    //Return this
+    return menu.getSelectedValue();
   }
 
   /**
@@ -218,6 +309,7 @@ public class Level implements MouseMotionListener, ActionListener, MouseListener
     topRow.setLayout(new GridLayout(1, 5));
     //Quit button
     JButton quitButton = new JButton("BACK TO LEVELS");
+    quitButton.addActionListener(this);
 
     //Time passed label
     JPanel timeLabelPanel = new JPanel();
@@ -228,6 +320,7 @@ public class Level implements MouseMotionListener, ActionListener, MouseListener
 
     //Submit button submits the current image for evaluation
     JButton submitButton = new JButton("SUBMIT");
+    submitButton.addActionListener(this);
 
     //Regions left button: how many blank regions are left. (What is the blank colour?)
     JPanel regionsLabelPanel = new JPanel();
@@ -239,6 +332,7 @@ public class Level implements MouseMotionListener, ActionListener, MouseListener
     //Reset button. May change to general menu later on.
     //Alternatively, add a menu bar to the window
     JButton resetButton = new JButton("RESET");
+    resetButton.addActionListener(this);
 
     topRow.add(quitButton);
     topRow.add(timeLabelPanel);
@@ -334,7 +428,7 @@ public class Level implements MouseMotionListener, ActionListener, MouseListener
   //****************************************//
   //               Event Listeners          //
   //****************************************//
-  
+
   /**
    * Called when the mouse is dragged (button held down and moved)
    * @param e the mouse event
@@ -405,10 +499,14 @@ public class Level implements MouseMotionListener, ActionListener, MouseListener
    */
   public void actionPerformed(ActionEvent a)
   {
-    if(a.getActionCommand().equals("Update"))
+    String action = a.getActionCommand();
+    if(action.equals("Update"))
     {
       this.repaint();
     }
+    else if (action.equals("BACK TO MAIN MENU")) buttonPress = 0;
+    else if (action.equals("SUBMIT")) buttonPress = 1;
+    else if (action.equals("RESTART")) buttonPress = 2;
   }
 
   /**
@@ -433,12 +531,7 @@ public class Level implements MouseMotionListener, ActionListener, MouseListener
    */
   public static void main( String args[])
   {
-    System.out.println("Enter the folder name of the level you want to test.");
-    Scanner sc = new Scanner(System.in);
-    String level = sc.nextLine();
-    sc.close();
 
-    new Level(level);
 
   }
 
