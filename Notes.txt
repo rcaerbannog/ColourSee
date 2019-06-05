@@ -6,6 +6,14 @@ TODO:
     Add method to read text from level.dat.
 -Add info to palette file to allow reading of appearColors for each buttons
 
+Procedure for using lens and colour filter:
+-Apply colour filter to all colours, including on image and on buttons
+-When lens is clicked, apply an undo filter to the image and change the colour of each palette button
+-When lens is deactivated, apply the colour filter to the image and change the colour of each palette button
+-When level ends, apply an undo filter to the image, THEN evaluate the colours
+If needed, store TWO lists of pixels in the picture: filter colour and normal colour
+And use the fill method TWICE, once on filtered array with appear colours, once on normal array with actual color
+
 
 
 

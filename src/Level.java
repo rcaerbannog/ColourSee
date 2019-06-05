@@ -20,9 +20,13 @@ import javax.swing.border.*;
  * Originally created for the Jython Environment for Students (JES). 
  * Modified to work with DrJava by Barbara Ericson
  * Also modified to show row and columns by Barbara Ericson
+ * Modified with fill function by Alexander Li
+ * New GUI implemented by Alexander Li
  * 
  * @author Keith McDermottt, gte047w@cc.gatech.edu
  * @author Barb Ericson ericson@cc.gatech.edu
+ * @author Alexander Li
+ * @version 2019-06-05 v1.0
  */
 public class Level implements MouseMotionListener, ActionListener, MouseListener
 {
@@ -87,8 +91,10 @@ public class Level implements MouseMotionListener, ActionListener, MouseListener
   public Level(){}
   
   /**
-   * Public constructor 
+   * Runs a level of the game
+   * Reads level data from the selected level directory, including image, palette, and key points
    * @param levelFolder the level directory
+   * @return The action ID to execute once the level ends/is terminated
    */
   public int runGame(String levelFolder){
     String levelFile = getLevelDirectory(levelFolder) + "levelInfo.dat";
@@ -188,7 +194,12 @@ public class Level implements MouseMotionListener, ActionListener, MouseListener
 
   }
 
-  //Create new JDialog with the results
+  /**
+   * Evaluates the player's results for this level and displays the end-of-level menu
+   * Compares the Color of each keypoint pixel to the Color stored in regionColors to see if they are equal
+   * Displays results, end-of-level message, and menu with option to restart, go to level selection, or main menu
+   * @return The action ID to execute once the level ends/is terminated
+   */
   public int results(){
     int correct = regions;
     for (int i = 0; i < regions; i++){
@@ -207,14 +218,12 @@ public class Level implements MouseMotionListener, ActionListener, MouseListener
 
     //These buttons could also be used for a general level thing
     String[] options = {"Levels", "Restart Level", "Main Menu"};
-    int[] values = {1, 2, 3};
+    int[] values = {LEVELS, RESTART, MAIN_MENU};
     ButtonMenu menu = new ButtonMenu(200, 100, ButtonMenu.VERTICAL_BOX, options, values, 1);
 
     resultsDialog.setDefaultCloseOperation (JDialog.DO_NOTHING_ON_CLOSE);
     resultsDialog.getContentPane ().add (menu);
 
-
-    final Object selectedOption;
     menu.addPropertyChangeListener (
             new PropertyChangeListener()
             {
@@ -223,39 +232,27 @@ public class Level implements MouseMotionListener, ActionListener, MouseListener
                 String prop = e.getPropertyName ();
 
                 if (resultsDialog.isVisible ()
-                        //&& (e.getSource () == resultsDialog)
+                        && (e.getSource () == resultsDialog)
                         && (prop.equals ("selectedValue")))
                 {
-                  //If you were going to check something
-                  //before closing the window, you'd do
-                  //it here.
                   resultsDialog.setVisible (false);
-
                 }
               }
             }
     );
 
-
-
     resultsDialog.pack ();
-
     resultsDialog.setResizable (false);
-    resultsDialog.setModal (true);
-    //setModal pauses current execution until the JDialog is closed
-
+    resultsDialog.setModal (true);  //setModal pauses current execution until the JDialog is closed
     resultsDialog.setLocationRelativeTo (pictureFrame);
-    //addPropertyChangeListener (new ValuePropertyHandler (dialog));
-
     resultsDialog.setVisible (true);
-    //Get the option that is chosen in the dialog
-    //Return this
+    //Get the option that is chosen in the dialog and return it
     return menu.getSelectedValue();
   }
 
   /**
-   * Method to get the directory for the media
-   * @return the media directory
+   * Method to get the path of the level directory
+   * @return the path of the level directory
    */
   public static String getLevelDirectory(String level)
   {
@@ -460,6 +457,7 @@ public class Level implements MouseMotionListener, ActionListener, MouseListener
   
   /**
    * Method called when the mouse is clicked
+   * Calls the fill method on the clicked pixel
    * @param e the mouse event
    */
   public void mouseClicked(MouseEvent e)
@@ -493,7 +491,7 @@ public class Level implements MouseMotionListener, ActionListener, MouseListener
 
 
   /**
-   * Controls the zoom menu bar
+   * Controls the GUI actions
    *
    * @param a the ActionEvent
    */
@@ -525,14 +523,4 @@ public class Level implements MouseMotionListener, ActionListener, MouseListener
     picture.fill(pictureX, pictureY, changeColor);
     this.repaint();
   }
-
-  /**
-   * Test Main.
-   */
-  public static void main( String args[])
-  {
-
-
-  }
-
 }

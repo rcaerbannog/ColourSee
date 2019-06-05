@@ -6,6 +6,10 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.util.EventObject;
 
+/**
+ * Test class for various components to be added
+ * Will be deleted before inclusion in the final game
+ */
 public class TestMenuDialog extends Frame
 {
     public TestMenuDialog ()
