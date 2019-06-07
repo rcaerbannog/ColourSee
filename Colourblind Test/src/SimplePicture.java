@@ -1,9 +1,9 @@
 import javax.imageio.ImageIO;
 import java.awt.image.BufferedImage;
+import javax.swing.ImageIcon;
 import java.awt.*;
 import java.io.*;
 import java.awt.geom.*;
-import java.util.ArrayList;
 
 /**
  * A class that represents a simple picture.  A simple picture may have
@@ -14,7 +14,7 @@ import java.util.ArrayList;
  * 
  * @author Barb Ericson ericson@cc.gatech.edu
  */
-public class Picture
+public class SimplePicture implements DigitalPicture
 {
   
   /////////////////////// Fields /////////////////////////
@@ -56,7 +56,7 @@ public class Picture
   * different call to super() is explicitly made as the first line 
   * of code in a constructor.
   */
- public Picture()
+ public SimplePicture() 
  {this(200,100);}
  
  /**
@@ -64,7 +64,7 @@ public class Picture
   * a picture
   * @param fileName the file name to use in creating the picture
   */
- public Picture(String fileName)
+ public SimplePicture(String fileName)
  {
    
    // load the picture into the buffered image 
@@ -79,7 +79,7 @@ public class Picture
   * @param width the desired width
   * @param height the desired height
   */
- public Picture(int width, int height)
+ public  SimplePicture(int width, int height)
  {
    bufferedImage = new BufferedImage(width, height, BufferedImage.TYPE_INT_RGB);
    title = "None";
@@ -96,7 +96,7 @@ public class Picture
   * @param height the desired height
   * @param theColor the background color for the picture
   */
- public Picture(int width, int height, Color theColor)
+ public  SimplePicture(int width, int height, Color theColor)
  {
    this(width,height);
    setAllPixelsToAColor(theColor);
@@ -106,7 +106,7 @@ public class Picture
   * A Constructor that takes a picture to copy information from
   * @param copyPicture the picture to copy from
   */
- public Picture(Picture copyPicture)
+ public SimplePicture(SimplePicture copyPicture)
  {
    if (copyPicture.fileName != null)
    {
@@ -127,7 +127,7 @@ public class Picture
   * A constructor that takes a buffered image
   * @param image the buffered image
   */
- public Picture(BufferedImage image)
+ public SimplePicture(BufferedImage image)
  {
    this.bufferedImage = image;
    title = "None";
@@ -149,7 +149,7 @@ public class Picture
   * the current picture object 
   * @param sourcePicture  the picture object to copy
   */
- public void copyPicture(Picture sourcePicture)
+ public void copyPicture(SimplePicture sourcePicture)
  {
    Pixel sourcePixel = null;
    Pixel targetPixel = null;
@@ -411,6 +411,15 @@ public class Picture
    else 
      this.hide();
  }
+
+ /**
+  * Method to open a picture explorer on a copy (in memory) of this 
+  * simple picture
+  */
+ public void explore()
+ {
+
+ }
  
  /**
   * Method to force the picture to repaint itself.  This is very
@@ -542,18 +551,18 @@ public class Picture
     // set up the scale transform
     AffineTransform scaleTransform = new AffineTransform();
     scaleTransform.scale(xFactor,yFactor);
-
+    
     // create a new picture object that is the right size
     Picture result = new Picture((int) (getWidth() * xFactor),
                                  (int) (getHeight() * yFactor));
-
+    
     // get the graphics 2d object to draw on the result
     Graphics graphics = result.getGraphics();
     Graphics2D g2 = (Graphics2D) graphics;
-
+    
     // draw the current image onto the result image scaled
     g2.drawImage(this.getImage(),scaleTransform,null);
-
+    
     return result;
   }
   
@@ -726,79 +735,16 @@ public class Picture
   {
     return getTransformEnclosingRect(trans);
   }
+ 
+ /**
+  * Method to return a string with information about this picture
+  * @return a string with information about the picture 
+  */
+ public String toString()
+ {
+   String output = "Simple Picture, filename " + fileName + 
+     " height " + getHeight() + " width " + getWidth();
+   return output;
+ }
 
-    /**
-     * Method to return a string with information about this picture.
-     * @return a string with information about the picture such as fileName,
-     * height and width.
-     */
-    public String toString()
-    {
-        String output = "Picture, filename " + getFileName() +
-                " height " + getHeight()
-                + " width " + getWidth();
-        return output;
-    }
-
-    /**
-     * Fills a region of a picture that is the same colour as itself
-     * @param pictureX The x coordinate of the starting pixel
-     * @param pictureY The y coordinate of the starting pixel
-     * @param replace The Color to replace each pixel with
-     */
-    public void fill(int pictureX, int pictureY, Color replace){
-        //Create a queue of pixels to operate on
-        ArrayList<Pixel> queue = new ArrayList<Pixel>(10000);
-        //Note: when accessing pixels, pixels.length is y,
-        Pixel[][] pixels = this.getPixels2D();
-        Pixel pixel = pixels[pictureY][pictureX];
-        Color target = pixel.getColor();
-
-        //Check if this pixel's colour is the same as the starting colour and not the same as the ending colour
-        //If change Color equals target Color then there is no need to do the fill
-
-        if (pixel.getColor().equals(replace))
-            return;
-        //Change the colour of this pixel
-        pixel.setColor(replace);
-        //Add the starting pixel to the queue
-        queue.add(pixel);
-
-        //Operate on any pixels in the queue until the queue is empty
-        while (queue.size() > 0) {
-            Pixel p = queue.remove(queue.size() - 1);
-            p.setColor(replace);
-            int pixelX = p.getX();
-            int pixelY = p.getY();
-
-            Pixel northPixel = (pixelY > 0) ? pixels[pixelY - 1][pixelX] : null;
-            Pixel southPixel = (pixelY < pixels.length-1) ? pixels[pixelY + 1][pixelX] : null;
-            Pixel westPixel = (pixelX > 0) ? pixels[pixelY][pixelX - 1] : null;
-            Pixel eastPixel = (pixelX < pixels[0].length-1) ? pixels[pixelY][pixelX + 1] : null;
-
-            //If pixel is the same Color as the target Color, change it to the new Color and add it to the queue
-            if (northPixel != null && northPixel.getColor().equals(target)) {
-                //northPixel.setColor(replace);
-                queue.add(northPixel);
-            }
-            if (southPixel != null && southPixel.getColor().equals(target)) {
-                //southPixel.setColor(replace);
-                queue.add(southPixel);
-            }
-            if (eastPixel != null && eastPixel.getColor().equals(target)) {
-                //eastPixel.setColor(replace);
-                queue.add(eastPixel);
-            }
-            if (westPixel != null && westPixel.getColor().equals(target)) {
-                //westPixel.setColor(replace);
-                queue.add(westPixel);
-            }
-        }
-    }
-
-
-
-    public static void colorblindSimulator (Pixel[][] oldPixels, int type){
-
-    }
-}
+} // end of Picture class

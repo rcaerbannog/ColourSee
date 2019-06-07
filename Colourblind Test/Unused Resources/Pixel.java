@@ -17,7 +17,7 @@ public class Pixel
   ////////////////////////// fields ///////////////////////////////////
   
   /** the digital picture this pixel belongs to */
-  private Picture picture;
+  private DigitalPicture picture;
   
   /** the x (column) location of this pixel in the picture; (0,0) is top left */
   private int x; 
@@ -34,7 +34,7 @@ public class Pixel
    * @param x the x location of the pixel in the picture
    * @param y the y location of the pixel in the picture
    */
-  public Pixel(Picture picture, int x, int y)
+  public Pixel(DigitalPicture picture, int x, int y)
   {
     // set the picture
     this.picture = picture;
@@ -245,7 +245,7 @@ public class Pixel
   
   /**
    * Method to correct a color value to be within 0 to 255
-   * @param value the value to use
+   * @param the value to use
    * @return a value within 0 to 255
    */
   private static int correctValue(int value)

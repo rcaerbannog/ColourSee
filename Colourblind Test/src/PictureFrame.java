@@ -21,7 +21,7 @@ public class PictureFrame
   private JLabel label = new JLabel(imageIcon);
   
   /** Digital Picture to display */
-  private Picture picture;
+  private DigitalPicture picture;
   
   ///////////////// constructors ////////////////////////
   
@@ -40,7 +40,7 @@ public class PictureFrame
    * @param picture  the digital picture to display in the 
    * picture frame
    */
-  public PictureFrame(Picture picture)
+  public PictureFrame(DigitalPicture picture)
   {
     // set the current object's picture to the passed in picture
     this.picture = picture;

@@ -418,7 +418,8 @@ public class SimplePicture implements DigitalPicture
   */
  public void explore()
  {
-
+   // create a copy of the current picture and explore it
+   new PictureExplorer(new SimplePicture(this));
  }
  
  /**
@@ -747,4 +748,4 @@ public class SimplePicture implements DigitalPicture
    return output;
  }
 
-} // end of SimplePicture class
+} // end of Picture class
