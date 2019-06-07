@@ -126,29 +126,32 @@ public class Level implements MouseMotionListener, ActionListener, MouseListener
       String inputLine = "";
 
       levelName = in.readLine();
-      imageFile = "levelIMG.png";
+      imageFile = getLevelDirectory(levelFolder) + "levelIMG.png";
       regions = Integer.parseInt(in.readLine());
       in.readLine();
 
       //Get open dialog text
       openDialogText = "<html>";
       inputLine = in.readLine();
-      while (!inputLine.equals("EOF")){
+      while (!inputLine.equals("<EOT>")){
         openDialogText += "<p>";
         openDialogText += inputLine;
         openDialogText += "</p>";
+        inputLine = in.readLine();
       }
       openDialogText += "</html>";
 
       //Get end dialog text
       endDialogText = "<html>";
       inputLine = in.readLine();
-      while (!inputLine.equals("EOF")){
+      while (!inputLine.equals("<EOT>")){
         endDialogText += "<p>";
         endDialogText += inputLine;
         endDialogText += "</p>";
+        inputLine = in.readLine();
       }
       openDialogText += "</html>";
+      in.readLine();
 
 
       regionPointsX = new int[regions];
@@ -219,7 +222,7 @@ public class Level implements MouseMotionListener, ActionListener, MouseListener
 
     try{
       //While no action has been taken to end the level
-      while (buttonPress != -1){
+      while (buttonPress == -1){
         Thread.sleep(10);
       }
 
@@ -265,7 +268,7 @@ public class Level implements MouseMotionListener, ActionListener, MouseListener
     String[] options = {"Levels", "Restart Level", "Main Menu"};
     int[] values = {LEVELS, RESTART, MAIN_MENU};
     ButtonMenu menu = new ButtonMenu(200, 100, ButtonMenu.VERTICAL_BOX, options, values, 1);
-
+    menu.setText(resultsText);
     resultsDialog.setDefaultCloseOperation (JDialog.DO_NOTHING_ON_CLOSE);
     resultsDialog.getContentPane ().add (menu);
 
@@ -275,9 +278,8 @@ public class Level implements MouseMotionListener, ActionListener, MouseListener
               public void propertyChange (PropertyChangeEvent e)
               {
                 String prop = e.getPropertyName ();
-
                 if (resultsDialog.isVisible ()
-                        && (e.getSource () == resultsDialog)
+                        && (e.getSource () == menu)
                         && (prop.equals ("selectedValue")))
                 {
                   resultsDialog.setVisible (false);
@@ -351,6 +353,7 @@ public class Level implements MouseMotionListener, ActionListener, MouseListener
     topRow.setLayout(new GridLayout(1, 5));
     //Quit button
     JButton quitButton = new JButton("BACK TO LEVELS");
+    quitButton.setActionCommand("BACK TO LEVELS");
     quitButton.addActionListener(this);
 
     //Time passed label
@@ -362,6 +365,7 @@ public class Level implements MouseMotionListener, ActionListener, MouseListener
 
     //Submit button submits the current image for evaluation
     JButton submitButton = new JButton("SUBMIT");
+    submitButton.setActionCommand("SUBMIT");
     submitButton.addActionListener(this);
 
     //Regions left button: how many blank regions are left. (What is the blank colour?)
@@ -374,6 +378,7 @@ public class Level implements MouseMotionListener, ActionListener, MouseListener
     //Reset button. May change to general menu later on.
     //Alternatively, add a menu bar to the window
     JButton resetButton = new JButton("RESET");
+    resetButton.setActionCommand("RESET");
     resetButton.addActionListener(this);
 
     topRow.add(quitButton);
@@ -547,7 +552,7 @@ public class Level implements MouseMotionListener, ActionListener, MouseListener
     {
       this.repaint();
     }
-    else if (action.equals("BACK TO MAIN MENU")) buttonPress = 0;
+    else if (action.equals("BACK TO LEVELS")) buttonPress = 0;
     else if (action.equals("SUBMIT")) buttonPress = 1;
     else if (action.equals("RESTART")) buttonPress = 2;
   }

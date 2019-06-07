@@ -133,7 +133,6 @@ public class ButtonMenu extends JPanel implements ActionListener {
                 break;
             }
         }
-        System.out.println(selectedValue);
         //Broadcast change in the selectedValue property to any attached PropertyChangeListeners
         mPcs.firePropertyChange("selectedValue", -1, selectedValue);
     }

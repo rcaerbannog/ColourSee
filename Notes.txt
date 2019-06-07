@@ -38,6 +38,8 @@ The JAR file should run
 The program files should be in a project compatible with NetBeans, DrJava, or Eclipse
 IntelliJ will not work
 
+Note: fill can fill out border. Change so fill doesn't work on border colour.
+
 
 
 
