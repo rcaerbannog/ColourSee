@@ -55,8 +55,9 @@ public class ButtonMenu extends JPanel implements ActionListener {
      */
     public ButtonMenu(int width, int buttonWidth, int layout, String[] options, int[] values, int defaultValue){
         super();    //JPanel constructor
-        //Set layout
-        this.setLayout(new FlowLayout());
+        this.setLayout(new BorderLayout());
+        //this.setPreferredSize(new Dimension(width, 1));
+
 
         numOptions = options.length;
         this.options = options;
@@ -65,6 +66,14 @@ public class ButtonMenu extends JPanel implements ActionListener {
 
         //Add the text label
         textLabel = new JLabel("");
+        this.add(textLabel, BorderLayout.NORTH);
+
+        //Button Panel
+        JPanel buttonPanel = new JPanel();
+        buttonPanel.setAlignmentX(JPanel.CENTER_ALIGNMENT);
+        if (layout == FLOW_LAYOUT) buttonPanel.setLayout(new FlowLayout());
+        else if (layout == GRID_LAYOUT) buttonPanel.setLayout(new GridLayout(numOptions, 1));
+        else if (layout == VERTICAL_BOX) buttonPanel.setLayout(new BoxLayout(buttonPanel, BoxLayout.Y_AXIS));
 
         //Add the buttons
         JButton[] buttons = new JButton[numOptions];
@@ -72,11 +81,19 @@ public class ButtonMenu extends JPanel implements ActionListener {
             buttons[i] = new JButton(options[i]);
             buttons[i].setActionCommand(options[i]);
             buttons[i].addActionListener(this);
-            this.add(buttons[i]);
-            //adjust size
-
             buttons[i].setBorder(BorderFactory.createEmptyBorder(5, 5, 5, 5));
+            //Change button width
+
+
+            buttonPanel.add(buttons[i]);
+            //adjust size
+            Dimension d = buttons[i].getPreferredSize();
+
+            buttons[i].setPreferredSize(new Dimension(buttonWidth, d.height));
+            buttons[i].setMinimumSize(new Dimension(buttonWidth, d.height));
         }
+
+        this.add(buttonPanel, BorderLayout.SOUTH);
     }
 
     /**
@@ -89,6 +106,7 @@ public class ButtonMenu extends JPanel implements ActionListener {
 
     /**
      * Sets the menu's text
+     * This can recognize html tags
      * @param newText The new text for textLabel
      */
     public void setText(String newText){

@@ -35,6 +35,10 @@ public class Level implements MouseMotionListener, ActionListener, MouseListener
 
   private int regions;
 
+  private String openDialogText;
+
+  private String endDialogText;
+
   private int[] regionPointsX;
 
   private int[] regionPointsY;
@@ -89,7 +93,25 @@ public class Level implements MouseMotionListener, ActionListener, MouseListener
    * Public constructor
    */
   public Level(){}
-  
+
+  /*
+    FILE INFO
+    LEVELDATA
+    level name
+    number of regions
+    <line>
+    beginning dialog text
+    <EOT>
+    Point
+    Correct Color (RGB)
+    <line>
+    <EOP>
+    end dialog text
+    <EOF>
+
+
+   */
+
   /**
    * Runs a level of the game
    * Reads level data from the selected level directory, including image, palette, and key points
@@ -101,10 +123,33 @@ public class Level implements MouseMotionListener, ActionListener, MouseListener
     String imageFile = null;
     try{
       BufferedReader in = new BufferedReader(new FileReader(levelFile));
+      String inputLine = "";
+
       levelName = in.readLine();
-      imageFile = getLevelDirectory(levelFolder) + in.readLine();
+      imageFile = "levelIMG.png";
       regions = Integer.parseInt(in.readLine());
       in.readLine();
+
+      //Get open dialog text
+      openDialogText = "<html>";
+      inputLine = in.readLine();
+      while (!inputLine.equals("EOF")){
+        openDialogText += "<p>";
+        openDialogText += inputLine;
+        openDialogText += "</p>";
+      }
+      openDialogText += "</html>";
+
+      //Get end dialog text
+      endDialogText = "<html>";
+      inputLine = in.readLine();
+      while (!inputLine.equals("EOF")){
+        endDialogText += "<p>";
+        endDialogText += inputLine;
+        endDialogText += "</p>";
+      }
+      openDialogText += "</html>";
+
 
       regionPointsX = new int[regions];
       regionPointsY = new int[regions];
@@ -170,15 +215,15 @@ public class Level implements MouseMotionListener, ActionListener, MouseListener
     //Create window
     createWindow();
 
-    //
-    try{
-      Thread.sleep(20000);
-    }catch(Exception e){}
+    JOptionPane.showMessageDialog(pictureFrame, openDialogText);
 
     try{
+      //While no action has been taken to end the level
       while (buttonPress != -1){
         Thread.sleep(10);
       }
+
+      //When the user presses a top row GUI Button
       if (buttonPress == 0){
         return LEVELS;
       }

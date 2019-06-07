@@ -14,6 +14,31 @@ Procedure for using lens and colour filter:
 If needed, store TWO lists of pixels in the picture: filter colour and normal colour
 And use the fill method TWICE, once on filtered array with appear colours, once on normal array with actual color
 
+Create filters for:
+Deuteranopia (red-green)
+Protanopia (red-green)
+Tritanopia (blue-yellow)
+Grayscale (achromatopsia)
+(These are the most severe forms)
+
+Get values from other CB filters
+
+
+DIRECTORY FORMAT
+Levels folder
+    worldList.txt
+    levelsList.txt
+    [level folders: can be sth like "1-3" or "custom-2", name not necessary]
+        level.dat
+        palette.dat
+        levelImg.png (must be named levelImg.png)
+
+
+The JAR file should run
+The program files should be in a project compatible with NetBeans, DrJava, or Eclipse
+IntelliJ will not work
+
+
 
 
 

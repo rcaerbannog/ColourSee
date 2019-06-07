@@ -5,10 +5,13 @@ import java.util.Scanner;
  * To be deleted later
  */
 public class Game {
-    Scanner sc = new Scanner(System.in);
-    String level = "FillTest2";
 
-    Level newLevel = new Level();
+    public static void main(String[]Args){
+        String level = "1-1";
 
-    int action = newLevel.runGame(level);
+        Level newLevel = new Level();
+
+        int action = newLevel.runGame(level);
+        System.out.println(action);
+    }
 }
