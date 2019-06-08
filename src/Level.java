@@ -45,6 +45,8 @@ public class Level implements MouseMotionListener, ActionListener, MouseListener
 
   private Color[] regionColors;
 
+  private Simulation cbType;
+
   //Program flow constants
   public static final int MAIN_MENU = 3;
   public static final int RESTART = 2;
@@ -68,6 +70,9 @@ public class Level implements MouseMotionListener, ActionListener, MouseListener
   
   /** The picture being explored */
   private Picture picture;
+
+  /** The picture with the colourblind filter applied */
+  private Picture filteredPic;
   
   /** The image icon used to display the picture */
   private ImageIcon scrollImageIcon;
@@ -116,11 +121,14 @@ public class Level implements MouseMotionListener, ActionListener, MouseListener
    * Runs a level of the game
    * Reads level data from the selected level directory, including image, palette, and key points
    * @param levelFolder the level directory
+   * @param cbType the type of colorblindness to simulate
    * @return The action ID to execute once the level ends/is terminated
    */
-  public int runGame(String levelFolder){
+  public int runGame(String levelFolder, Simulation cbType){
     String levelFile = getLevelDirectory(levelFolder) + "levelInfo.dat";
     String imageFile = null;
+    this.cbType = cbType;
+
     try{
       BufferedReader in = new BufferedReader(new FileReader(levelFile));
       String inputLine = "";
@@ -180,8 +188,12 @@ public class Level implements MouseMotionListener, ActionListener, MouseListener
       System.exit(0);
     }
 
+    //make image
     this.picture = new Picture(imageFile);
     zoomFactor = 1;
+    //make filtered Picture
+    filteredPic = new Picture(createFilteredImage(picture.getBufferedImage(), cbType));
+
 
     //Create the colour palette
     String paletteFile = getLevelDirectory(levelFolder) + "palette.dat";
@@ -345,7 +357,7 @@ public class Level implements MouseMotionListener, ActionListener, MouseListener
     pictureFrame = new JFrame(); // create the JFrame
     pictureFrame.setResizable(false);  // allow the user to resize it
     pictureFrame.getContentPane().setLayout(new BorderLayout(10, 10)); // use border layout
-    pictureFrame.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE); // when close stop
+    pictureFrame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE); // when close stop the program
     pictureFrame.setTitle(picture.getTitle());
 
     //Creates the GUI on top
@@ -392,16 +404,16 @@ public class Level implements MouseMotionListener, ActionListener, MouseListener
     //creates the scrollpane for the picture
     scrollPane = new JScrollPane();
 
-    BufferedImage bimg = picture.getBufferedImage();
-    imageDisplay = new ImageDisplay(bimg);
+    BufferedImage filteredIMG = picture.getBufferedImage();
+    imageDisplay = new ImageDisplay(filteredIMG);
     imageDisplay.addMouseMotionListener(this);
     imageDisplay.addMouseListener(this);
     imageDisplay.setToolTipText("Click on the image to fill the region with a selected colour.");
     scrollPane.setViewportView(imageDisplay);
 
-    //Adds palette
+    //Adds lens and palette
     JPanel paletteBox = new JPanel();
-    paletteBox.setLayout(new FlowLayout());
+    paletteBox.setLayout(new BoxLayout(paletteBox, BoxLayout.X_AXIS));
     paletteBox.setAlignmentX(JPanel.CENTER_ALIGNMENT);
     paletteBox.setAlignmentY(JPanel.CENTER_ALIGNMENT);
     paletteBox.add(palette);
@@ -552,6 +564,24 @@ public class Level implements MouseMotionListener, ActionListener, MouseListener
     {
       this.repaint();
     }
+    else if (action.equals("REMOVE FILTER")){
+      //Change image displayed to picture
+      //Change button colours to true color
+
+      imageDisplay.setImage(picture.getBufferedImage());
+
+      this.repaint();
+    }
+    else if (action.equals("ADD FILTER")){
+      //Change image displayed to filteredPic
+      //Change button colours to filtered color
+
+      imageDisplay.setImage(filteredPic.getBufferedImage());
+
+      this.repaint();
+    }
+
+    //Exit commands
     else if (action.equals("BACK TO LEVELS")) buttonPress = 0;
     else if (action.equals("SUBMIT")) buttonPress = 1;
     else if (action.equals("RESTART")) buttonPress = 2;
@@ -572,5 +602,22 @@ public class Level implements MouseMotionListener, ActionListener, MouseListener
     // display the information for this x and y
     picture.fill(pictureX, pictureY, changeColor);
     this.repaint();
+  }
+
+  /**
+   * Creates a colorblind filtered version of an image
+   * @param normal The normal image
+   * @return The filtered image
+   */
+  public BufferedImage createFilteredImage(BufferedImage normal, Simulation filterType){
+    Simulator sim = new Simulator();
+    sim.simulate(filterType);
+    BufferedImage normalBF = normal;
+    BufferedImage filteredBF = new BufferedImage(normalBF.getWidth(), normalBF.getHeight(), BufferedImage.TYPE_INT_RGB);
+    //This method of copying the BufferedImage avoids conflicts in BufferedImage type
+    //Incompatible type causes an error in the Simulator class
+    filteredBF.getGraphics().drawImage(normalBF, 0, 0, null);
+    filteredBF = sim.filter(filteredBF);
+    return filteredBF;
   }
 }

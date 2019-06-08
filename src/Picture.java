@@ -795,10 +795,4 @@ public class Picture
             }
         }
     }
-
-
-
-    public static void colorblindSimulator (Pixel[][] oldPixels, int type){
-
-    }
 }
