@@ -33,6 +33,36 @@ public class FileChooser
   }
 
   /**
+   * Method to get the path of the level directory
+   * @return the path of the level directory
+   */
+  public static String getLevelDirectory(String level)
+  {
+    String path = "../levels/" + level + "/";
+    String directory = null;
+    boolean done = false;
+    File dirFile = null;
+
+    // try to find the images directory
+    try {
+      // get the URL for where we loaded this class
+      Class currClass = Class.forName("Level");
+      URL classURL = currClass.getResource("Level.class");
+      URL fileURL = new URL(classURL,path);
+      directory = fileURL.getPath();
+      directory = URLDecoder.decode(directory, "UTF-8");
+      dirFile = new File(directory);
+      if (dirFile.exists()) {
+        //setMediaPath(directory);
+        return directory;
+      }
+    } catch (Exception ex) {
+    }
+
+    return directory;
+  }
+
+  /**
    * Method to pick an item using the file chooser
    * @param fileChooser the file Chooser to use
    * @return the path name
@@ -108,7 +138,7 @@ public class FileChooser
         // get the URL for where we loaded this class
         Class currClass = Class.forName("FileChooser");
         URL classURL = currClass.getResource("FileChooser.class");
-        URL fileURL = new URL(classURL,"../levels/");
+        URL fileURL = new URL(classURL,"../images/");
         directory = fileURL.getPath();
         directory = URLDecoder.decode(directory, "UTF-8");
         dirFile = new File(directory);

@@ -47,6 +47,24 @@ public class Level implements MouseMotionListener, ActionListener, MouseListener
 
   private Simulation cbType;
 
+  //Game clock
+  private Timer clockTimer;
+
+  private int time;
+
+  JLabel timeLabel;
+
+  //Lens clock
+  private Timer lensTimer;
+
+  private int lensTime;
+
+  JLabel lensTimeLabel;
+
+  private boolean isLensUsable;
+
+  private boolean isLensInfinite;
+
   //Program flow constants
   public static final int MAIN_MENU = 3;
   public static final int RESTART = 2;
@@ -97,7 +115,19 @@ public class Level implements MouseMotionListener, ActionListener, MouseListener
   /**
    * Public constructor
    */
-  public Level(){}
+  public Level(){
+    clockTimer = new Timer(1000, this);
+    clockTimer.setActionCommand("CLOCK TICK");
+
+    time = 0;
+
+    lensTimer = new Timer(1000, this);
+    lensTimer.setActionCommand("LENS CLOCK TICK");
+    isLensUsable = true;
+    isLensInfinite = true;
+    lensTime = 0;
+    //Initial delay (time to event firing) will be set with file output
+  }
 
   /*
     FILE INFO
@@ -125,7 +155,7 @@ public class Level implements MouseMotionListener, ActionListener, MouseListener
    * @return The action ID to execute once the level ends/is terminated
    */
   public int runGame(String levelFolder, Simulation cbType){
-    String levelFile = getLevelDirectory(levelFolder) + "levelInfo.dat";
+    String levelFile = FileChooser.getLevelDirectory(levelFolder) + "levelInfo.dat";
     String imageFile = null;
     this.cbType = cbType;
 
@@ -134,8 +164,28 @@ public class Level implements MouseMotionListener, ActionListener, MouseListener
       String inputLine = "";
 
       levelName = in.readLine();
-      imageFile = getLevelDirectory(levelFolder) + "levelIMG.png";
+      imageFile = FileChooser.getLevelDirectory(levelFolder) + "levelIMG.png";
       regions = Integer.parseInt(in.readLine());
+
+      //Set up lens time constraints
+      //rawLensTime is the lens time stored in levelInfo.dat in milliseconds
+      int rawLensTime = Integer.parseInt(in.readLine());
+      if (rawLensTime == 0){
+        isLensUsable = false;
+        isLensInfinite = false;
+        lensTime = 0;
+      }
+      else if (rawLensTime < 0){
+        isLensUsable = true;
+        isLensInfinite = false;
+        lensTime = Integer.MAX_VALUE;
+      }
+      else{
+        isLensUsable = true;
+        isLensInfinite = false;
+        lensTime = rawLensTime;
+      }
+
       in.readLine();
 
       //Get open dialog text
@@ -196,7 +246,7 @@ public class Level implements MouseMotionListener, ActionListener, MouseListener
 
 
     //Create the colour palette
-    String paletteFile = getLevelDirectory(levelFolder) + "palette.dat";
+    String paletteFile = FileChooser.getLevelDirectory(levelFolder) + "palette.dat";
     try{
       BufferedReader in = new BufferedReader(new FileReader(paletteFile));
       paletteRows = Integer.parseInt(in.readLine());
@@ -232,12 +282,20 @@ public class Level implements MouseMotionListener, ActionListener, MouseListener
 
     JOptionPane.showMessageDialog(pictureFrame, openDialogText);
 
+    clockTimer.start();
+    if (isLensUsable && !isLensInfinite){
+      lensTimer.start();
+    }
+
     try{
       //While no action has been taken to end the level
       while (buttonPress == -1){
         Thread.sleep(10);
       }
-
+      clockTimer.stop();
+      lensTimer.stop();
+      imageDisplay.setImage(picture.getBufferedImage());
+      this.repaint();
       //When the user presses a top row GUI Button
       if (buttonPress == 0){
         return LEVELS;
@@ -309,35 +367,7 @@ public class Level implements MouseMotionListener, ActionListener, MouseListener
     return menu.getSelectedValue();
   }
 
-  /**
-   * Method to get the path of the level directory
-   * @return the path of the level directory
-   */
-  public static String getLevelDirectory(String level)
-  {
-    String path = "../levels/" + level + "/";
-    String directory = null;
-    boolean done = false;
-    File dirFile = null;
 
-    // try to find the images directory
-    try {
-      // get the URL for where we loaded this class
-      Class currClass = Class.forName("Level");
-      URL classURL = currClass.getResource("Level.class");
-      URL fileURL = new URL(classURL,path);
-      directory = fileURL.getPath();
-      directory = URLDecoder.decode(directory, "UTF-8");
-      dirFile = new File(directory);
-      if (dirFile.exists()) {
-        //setMediaPath(directory);
-        return directory;
-      }
-    } catch (Exception ex) {
-    }
-
-    return directory;
-  }
   
   /**
    * Set the title of the frame
@@ -372,7 +402,7 @@ public class Level implements MouseMotionListener, ActionListener, MouseListener
     JPanel timeLabelPanel = new JPanel();
     timeLabelPanel.setAlignmentX(JPanel.CENTER_ALIGNMENT);
     timeLabelPanel.setAlignmentY(JPanel.BOTTOM_ALIGNMENT);
-    JLabel timeLabel = new JLabel("TIME PASSED: 0");
+    timeLabel = new JLabel("TIME PASSED: 0");
     timeLabelPanel.add(timeLabel);
 
     //Submit button submits the current image for evaluation
@@ -564,20 +594,36 @@ public class Level implements MouseMotionListener, ActionListener, MouseListener
     {
       this.repaint();
     }
+    else if (action.equals("CLOCK TICK")){
+      time++;
+      timeLabel.setText("TIME PASSED: " + time);
+      this.repaint();
+    }
+    else if (action.equals("LENS CLOCK TICK")){
+      lensTime--;
+      if (lensTime == 0){
+        lensTimer.stop();
+        isLensUsable = false;
+        //Set lens button inactive
+        imageDisplay.setImage(filteredPic.getBufferedImage());
+        this.repaint();
+      }
+    }
     else if (action.equals("REMOVE FILTER")){
       //Change image displayed to picture
       //Change button colours to true color
-
-      imageDisplay.setImage(picture.getBufferedImage());
-
-      this.repaint();
+      if (isLensUsable == true){
+        imageDisplay.setImage(picture.getBufferedImage());
+        lensTimer.start();
+        this.repaint();
+      }
     }
     else if (action.equals("ADD FILTER")){
       //Change image displayed to filteredPic
       //Change button colours to filtered color
 
       imageDisplay.setImage(filteredPic.getBufferedImage());
-
+      lensTimer.stop();
       this.repaint();
     }
 

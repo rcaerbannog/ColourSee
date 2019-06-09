@@ -11,7 +11,7 @@ public class Game {
 
         Level newLevel = new Level();
 
-        int action = newLevel.runGame(level);
+        int action = newLevel.runGame(level, Simulation.tritan);
         System.out.println(action);
     }
 }

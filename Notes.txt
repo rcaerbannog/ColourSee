@@ -5,10 +5,14 @@ TODO:
 
 Apply color filter to the buttons
 
-Implement lens button in paletteBox, set icon as a magnifying glass image
+Implement lens button in paletteBox, set icon as a magnifying glass image. Add lens timer with button
 Restore the getMediaDirectory method to access the images folder
 
 Clean up ButtonMenu format: get it working goddamnit
+
+Note: timers are implemented. Now, just implement how lens button interacts with it
+Action commands "ADD FILTER" and "REMOVE FILTER"
+
 
 
 Procedure for using lens and colour filter:
