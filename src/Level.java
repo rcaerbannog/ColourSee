@@ -614,6 +614,7 @@ public class Level implements MouseMotionListener, ActionListener, MouseListener
       //Change button colours to true color
       if (isLensUsable == true){
         imageDisplay.setImage(picture.getBufferedImage());
+        palette.changeButtonsToButtonColor();
         lensTimer.start();
         this.repaint();
       }
@@ -621,16 +622,16 @@ public class Level implements MouseMotionListener, ActionListener, MouseListener
     else if (action.equals("ADD FILTER")){
       //Change image displayed to filteredPic
       //Change button colours to filtered color
-
-      imageDisplay.setImage(filteredPic.getBufferedImage());
       lensTimer.stop();
+      imageDisplay.setImage(filteredPic.getBufferedImage());
+      palette.changeButtonsToAppearColor();
       this.repaint();
     }
 
     //Exit commands
     else if (action.equals("BACK TO LEVELS")) buttonPress = 0;
     else if (action.equals("SUBMIT")) buttonPress = 1;
-    else if (action.equals("RESTART")) buttonPress = 2;
+    else if (action.equals("RESET")) buttonPress = 2;
   }
 
   /**

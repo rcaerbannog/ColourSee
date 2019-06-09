@@ -13,29 +13,49 @@ public class ColorPalette extends JPanel{
     private Color selectedColor;
 
     /** The array of ColorButtons in the palette */
-    private ColorButton[][] buttons;
+    private ColorButton[] buttons;
+
+    /** The lens button */
+    private JButton lensButton;
+
+    /** The grid of color buttons */
+    private JPanel colorGrid;
+
+
+    private JButton colorSwatch;
+
 
     /**
      * Class constructor: creates the palette
      * @param rows The number of rows in the palette
      * @param cols The number of columns in the palette
      * @param buttonColors The Colors to create a button for
-     * @param hiddenColors The corresponding background colour for each button
+     * @param appearColors The corresponding appearance colour for each button
      * @param labels The text on each button
      */
-    public ColorPalette(int rows, int cols, Color[] buttonColors, Color[] hiddenColors, String[] labels){
+    public ColorPalette(int rows, int cols, Color[] buttonColors, Color[] appearColors, String[] labels){
         super();
 
         setLayout(new GridLayout(rows, cols, 2, 2));
 
+        buttons = new ColorButton[buttonColors.length];
         //Construct a grid of ColorButtons
         //With given Color and Text
         for (int i = 0; i < buttonColors.length; i++){
             String label = (labels != null)? labels[i] : "";
-            this.add(new ColorButton(label, buttonColors[i], hiddenColors[i],this));
+            buttons[i] = (new ColorButton(label, buttonColors[i], appearColors[i],this));
+            this.add(buttons[i]);
         }
-
         selectedColor = buttonColors[0];
+
+        //Construct the color swatch
+
+
+        //Construct the lens button
+
+
+
+        //Add everything to the main panel
     }
 
     /**
@@ -52,5 +72,24 @@ public class ColorPalette extends JPanel{
      */
     public Color getSelectedColor(){
         return selectedColor;
+    }
+
+    public void changeButtonsToAppearColor(){
+        for (ColorButton b: buttons){
+            b.setBackground(b.getAppearColor());
+        }
+    }
+
+    public void changeButtonsToButtonColor(){
+        for (ColorButton b: buttons){
+            b.setBackground(b.getButtonColor());
+        }
+    }
+
+    public void setLensButtonActive(boolean flag){
+        if (flag)
+            lensButton.setEnabled(true);
+        else
+            lensButton.setEnabled(false);
     }
 }

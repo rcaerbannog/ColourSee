@@ -63,14 +63,14 @@ public class Simulator {
         }
     }
     /**
-     * Use this BufferedImageOp for the simulation.
+     * Use this ColorblindFilter for the simulation.
      */
-    private BufferedImageOp op;
+    private ColorblindFilter op;
 
     /**
      * Creates a new instance of Simulator
      */
-    protected Simulator() {
+    public Simulator() {
     }
 
     /**
@@ -79,8 +79,12 @@ public class Simulator {
      * @normal The image with normal vision.
      * @return The image with simulated color vision impairment.
      */
-    protected BufferedImage filter(BufferedImage normal) {
+    public BufferedImage filter(BufferedImage normal) {
         return op.filter(normal, null);
+    }
+
+    public Color filterColor(Color normalColor){
+        return op.filterColor(normalColor);
     }
 
     /**
@@ -105,10 +109,14 @@ public class Simulator {
         }
     }
 
+    private interface ColorblindFilter extends BufferedImageOp {
+        public Color filterColor(Color normalColor);
+    }
+
     /**
      * A red-green blindness filter (deuteranopia and protanopia).
      */
-    private class RedGreenFilter implements BufferedImageOp {
+    private class RedGreenFilter implements ColorblindFilter {
 
         private final int k1;
         private final int k2;
@@ -118,6 +126,49 @@ public class Simulator {
             this.k1 = k1;
             this.k2 = k2;
             this.k3 = k3;
+        }
+
+        public Color filterColor(Color normalColor){
+
+            final int r = normalColor.getRed();
+            final int g = normalColor.getGreen();
+            final int b = normalColor.getBlue();
+
+            // get linear rgb values in the range 0..2^15-1
+            final int r_lin = SRGB_TO_LINRGB[r];
+            final int g_lin = SRGB_TO_LINRGB[g];
+            final int b_lin = SRGB_TO_LINRGB[b];
+
+            // simulated red and green are identical
+            // scale the matrix values to 0..2^15 for integer computations
+            // of the simulated protan values.
+            // divide after the computation by 2^15 to rescale.
+            // also divide by 2^15 and multiply by 2^8 to scale the linear rgb to 0..255
+            // total division is by 2^15 * 2^15 / 2^8 = 2^22
+            // shift the bits by 22 places instead of dividing
+            int r_blind = (int) (k1 * r_lin + k2 * g_lin) >> 22;
+            int b_blind = (int) (k3 * r_lin - k3 * g_lin + 32768 * b_lin) >> 22;
+
+            if (r_blind < 0) {
+                r_blind = 0;
+            } else if (r_blind > 255) {
+                r_blind = 255;
+            }
+
+            if (b_blind < 0) {
+                b_blind = 0;
+            } else if (b_blind > 255) {
+                b_blind = 255;
+            }
+
+            // convert reduced linear rgb to gamma corrected rgb
+            int red = LINRGB_TO_SRGB[r_blind];
+            red = red >= 0 ? red : 256 + red; // from unsigned to signed
+            int blue = LINRGB_TO_SRGB[b_blind];
+            blue = blue >= 0 ? blue : 256 + blue; // from unsigned to signed
+
+            Color blindColor = new Color(red, g, blue, normalColor.getAlpha());
+            return blindColor;
         }
 
         @Override
@@ -227,7 +278,92 @@ public class Simulator {
     /**
      * A filter for simulated Tritanopia.
      */
-    private class TritanFilter implements BufferedImageOp {
+    private class TritanFilter implements ColorblindFilter {
+
+        public Color filterColor(Color normalColor){
+            /* Code for tritan simulation from GIMP 2.2
+             *  This could be optimised for speed.
+             *  Performs tritan color image simulation based on
+             *  Brettel, Vienot and Mollon JOSA 14/10 1997
+             *  L,M,S for lambda=475,485,575,660
+             *
+             * Load the LMS anchor-point values for lambda = 475 & 485 nm (for
+             * protans & deutans) and the LMS values for lambda = 575 & 660 nm
+             * (for tritans)
+             */
+            final float anchor_e0 = 0.05059983f + 0.08585369f + 0.00952420f;
+            final float anchor_e1 = 0.01893033f + 0.08925308f + 0.01370054f;
+            final float anchor_e2 = 0.00292202f + 0.00975732f + 0.07145979f;
+            final float inflection = anchor_e1 / anchor_e0;
+
+            /* Set 1: regions where lambda_a=575, set 2: lambda_a=475 */
+            final float a1 = -anchor_e2 * 0.007009f;
+            final float b1 = anchor_e2 * 0.0914f;
+            final float c1 = anchor_e0 * 0.007009f - anchor_e1 * 0.0914f;
+            final float a2 = anchor_e1 * 0.3636f - anchor_e2 * 0.2237f;
+            final float b2 = anchor_e2 * 0.1284f - anchor_e0 * 0.3636f;
+            final float c2 = anchor_e0 * 0.2237f - anchor_e1 * 0.1284f;
+
+            int r = normalColor.getRed();
+            int g = normalColor.getBlue();
+            int b = normalColor.getGreen();
+
+            // get linear rgb values in the range 0..2^15-1
+            r = SRGB_TO_LINRGB[r];
+            g = SRGB_TO_LINRGB[g];
+            b = SRGB_TO_LINRGB[b];
+
+            /* Convert to LMS (dot product with transform matrix) */
+            final float L = (r * 0.05059983f + g * 0.08585369f + b * 0.00952420f) / 32767.f;
+            final float M = (r * 0.01893033f + g * 0.08925308f + b * 0.01370054f) / 32767.f;
+            float S; // = (r * 0.00292202f + g * 0.00975732f + b * 0.07145979f) / 32767.f;
+
+            final float tmp = M / L;
+
+            /* See which side of the inflection line we fall... */
+            if (tmp < inflection) {
+                S = -(a1 * L + b1 * M) / c1;
+            } else {
+                S = -(a2 * L + b2 * M) / c2;
+            }
+
+            /* Convert back to RGB (cross product with transform matrix) */
+            int ired = (int) (255.f * (L * 30.830854f
+                    - M * 29.832659f + S * 1.610474f));
+            int igreen = (int) (255.f * (-L * 6.481468f
+                    + M * 17.715578f - S * 2.532642f));
+            int iblue = (int) (255.f * (-L * 0.375690f
+                    - M * 1.199062f + S * 14.273846f));
+
+            // convert reduced linear rgb to gamma corrected rgb
+            if (ired < 0) {
+                ired = 0;
+            } else if (ired > 255) {
+                ired = 255;
+            } else {
+                ired = LINRGB_TO_SRGB[ired];
+                ired = ired >= 0 ? ired : 256 + ired; // from unsigned to signed
+            }
+            if (igreen < 0) {
+                igreen = 0;
+            } else if (igreen > 255) {
+                igreen = 255;
+            } else {
+                igreen = LINRGB_TO_SRGB[igreen];
+                igreen = igreen >= 0 ? igreen : 256 + igreen; // from unsigned to signed
+            }
+            if (iblue < 0) {
+                iblue = 0;
+            } else if (iblue > 255) {
+                iblue = 255;
+            } else {
+                iblue = LINRGB_TO_SRGB[iblue];
+                iblue = iblue >= 0 ? iblue : 256 + iblue; // from unsigned to signed
+            }
+
+            Color blindColor = new Color(ired, igreen, iblue, normalColor.getAlpha());
+            return blindColor;
+        }
 
         @Override
         public BufferedImage filter(BufferedImage src, BufferedImage dst) {
@@ -383,7 +519,37 @@ public class Simulator {
      * conversion to grayscale.
      * https://en.wikipedia.org/wiki/Grayscale#Colorimetric_(perceptual_luminance-preserving)_conversion_to_grayscale
      */
-    private class GrayscaleFilter implements BufferedImageOp {
+    private class GrayscaleFilter implements ColorblindFilter {
+
+        public Color filterColor(Color normalColor){
+
+            final int r = normalColor.getRed();
+            final int g = normalColor.getGreen();
+            final int b = normalColor.getBlue();
+
+            // get linear rgb values in the range 0..2^15-1
+            final int r_lin = SRGB_TO_LINRGB[r];
+            final int g_lin = SRGB_TO_LINRGB[g];
+            final int b_lin = SRGB_TO_LINRGB[b];
+
+            // perceptual luminance-preserving conversion to grayscale
+            // https://en.wikipedia.org/wiki/Grayscale#Colorimetric_(perceptual_luminance-preserving)_conversion_to_grayscale
+            double luminance = 0.2126 * r_lin + 0.7152 * g_lin + 0.0722 * b_lin;
+            int linRGB = ((int) (luminance)) >> 8; // divide by 2^8 to rescale
+
+            // convert linear rgb to gamma corrected sRGB
+            if (linRGB < 0) {
+                linRGB = 0;
+            } else if (linRGB > 255) {
+                linRGB = 255;
+            } else {
+                linRGB = LINRGB_TO_SRGB[linRGB];
+                linRGB = linRGB >= 0 ? linRGB : 256 + linRGB; // from unsigned to signed
+            }
+
+            Color blindColor = new Color(linRGB, linRGB, linRGB, normalColor.getAlpha());
+            return blindColor;
+        }
 
         @Override
         public BufferedImage filter(BufferedImage src, BufferedImage dst) {

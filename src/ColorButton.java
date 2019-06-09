@@ -40,6 +40,14 @@ public class ColorButton extends Button implements MouseListener{
 
     }
 
+    public Color getAppearColor() {
+        return appearColor;
+    }
+
+    public Color getButtonColor() {
+        return buttonColor;
+    }
+
     /**
      * Invoked when the mouse button has been clicked (pressed and released) on a component.
      * Changes the selected Color of the palette, which determines the fill Color

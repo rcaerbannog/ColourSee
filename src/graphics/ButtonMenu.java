@@ -56,7 +56,6 @@ public class ButtonMenu extends JPanel implements ActionListener {
     public ButtonMenu(int width, int buttonWidth, int layout, String[] options, int[] values, int defaultValue){
         super();    //JPanel constructor
         this.setLayout(new BorderLayout());
-        //this.setPreferredSize(new Dimension(width, 1));
 
 
         numOptions = options.length;
@@ -66,6 +65,8 @@ public class ButtonMenu extends JPanel implements ActionListener {
 
         //Add the text label
         textLabel = new JLabel("");
+        textLabel.setAlignmentX(JLabel.CENTER_ALIGNMENT);
+        textLabel.setBorder(BorderFactory.createEmptyBorder(5, 5, 5, 5));
         this.add(textLabel, BorderLayout.NORTH);
 
         //Button Panel
@@ -81,16 +82,16 @@ public class ButtonMenu extends JPanel implements ActionListener {
             buttons[i] = new JButton(options[i]);
             buttons[i].setActionCommand(options[i]);
             buttons[i].addActionListener(this);
+            buttons[i].setAlignmentX(JButton.CENTER_ALIGNMENT);
             buttons[i].setBorder(BorderFactory.createEmptyBorder(5, 5, 5, 5));
             //Change button width
-
+            Dimension d = buttons[i].getPreferredSize();
+            d = new Dimension(buttonWidth, d.height);
+            buttons[i].setPreferredSize(d);
+            buttons[i].setMinimumSize(d);
+            buttons[i].setMaximumSize(d);
 
             buttonPanel.add(buttons[i]);
-            //adjust size
-            Dimension d = buttons[i].getPreferredSize();
-
-            buttons[i].setPreferredSize(new Dimension(buttonWidth, d.height));
-            buttons[i].setMinimumSize(new Dimension(buttonWidth, d.height));
         }
 
         this.add(buttonPanel, BorderLayout.SOUTH);
