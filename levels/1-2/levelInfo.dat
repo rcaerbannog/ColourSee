@@ -1,25 +1,26 @@
 Level 1-2
-6
+5
 
-1,1
-0,64,0
+Now that you understand how the game works, let’s try again with another picture.
+<EOT>
 
-250,150
-0,96,0
 
-445,435
+360,138
+0,0,255
+
+345,281
+255,255,0
+
+355,649
 0,128,0
 
-160,380
-0,160,0
+169,672
+0,128,0
 
-650,460
-0,192,0
+522,634
+0,128,0
 
-685,450
-0,224,0
-
-EOF
+<EOF>
 
 COMMENTS
 Line 1: level name
