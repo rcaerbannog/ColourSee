@@ -54,7 +54,7 @@ public class ColorButton extends Button implements MouseListener{
      */
     @Override
     public void mouseClicked(MouseEvent e){
-        parentPalette.setSelectedColor(buttonColor);
+        parentPalette.setSelectedColorButton(this);
         parentPalette.repaint();
     }
 

@@ -7,7 +7,7 @@ import java.util.Scanner;
 public class Game {
 
     public static void main(String[]Args){
-        String level = "1-1";
+        String level = "0-1";
 
         Level newLevel = new Level();
 

@@ -92,6 +92,9 @@ public class ButtonMenu extends JPanel implements ActionListener {
             buttons[i].setMaximumSize(d);
 
             buttonPanel.add(buttons[i]);
+            if (layout == VERTICAL_BOX){
+                buttonPanel.add(Box.createRigidArea(new Dimension(0, 10)));
+            }
         }
 
         this.add(buttonPanel, BorderLayout.SOUTH);

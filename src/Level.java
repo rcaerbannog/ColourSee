@@ -8,6 +8,7 @@ import java.net.URLDecoder;
 import java.util.Scanner;
 import java.awt.*;
 import java.awt.event.*;
+import javax.imageio.ImageIO;
 import javax.swing.*;
 import java.awt.image.*;
 import javax.swing.border.*;
@@ -34,6 +35,8 @@ public class Level implements MouseMotionListener, ActionListener, MouseListener
   private String levelName;
 
   private int regions;
+
+  private int result; //Can be 0, 1, 2, or 3 in this game
 
   private String openDialogText;
 
@@ -65,6 +68,12 @@ public class Level implements MouseMotionListener, ActionListener, MouseListener
 
   private boolean isLensInfinite;
 
+  private JButton lensButton;
+
+  private ImageIcon lensIcon;
+
+  private ImageIcon lensIconPressed;
+
   //Program flow constants
   public static final int MAIN_MENU = 3;
   public static final int RESTART = 2;
@@ -88,9 +97,6 @@ public class Level implements MouseMotionListener, ActionListener, MouseListener
   
   /** The picture being explored */
   private Picture picture;
-
-  /** The picture with the colourblind filter applied */
-  private Picture filteredPic;
   
   /** The image icon used to display the picture */
   private ImageIcon scrollImageIcon;
@@ -121,7 +127,7 @@ public class Level implements MouseMotionListener, ActionListener, MouseListener
 
     time = 0;
 
-    lensTimer = new Timer(1000, this);
+    lensTimer = new Timer(100, this);
     lensTimer.setActionCommand("LENS CLOCK TICK");
     isLensUsable = true;
     isLensInfinite = true;
@@ -168,7 +174,7 @@ public class Level implements MouseMotionListener, ActionListener, MouseListener
       regions = Integer.parseInt(in.readLine());
 
       //Set up lens time constraints
-      //rawLensTime is the lens time stored in levelInfo.dat in milliseconds
+      //rawLensTime is the lens time stored in levelInfo.dat in seconds
       int rawLensTime = Integer.parseInt(in.readLine());
       if (rawLensTime == 0){
         isLensUsable = false;
@@ -183,7 +189,7 @@ public class Level implements MouseMotionListener, ActionListener, MouseListener
       else{
         isLensUsable = true;
         isLensInfinite = false;
-        lensTime = rawLensTime;
+        lensTime = rawLensTime*10;
       }
 
       in.readLine();
@@ -241,8 +247,6 @@ public class Level implements MouseMotionListener, ActionListener, MouseListener
     //make image
     this.picture = new Picture(imageFile);
     zoomFactor = 1;
-    //make filtered Picture
-    filteredPic = new Picture(createFilteredImage(picture.getBufferedImage(), cbType));
 
 
     //Create the colour palette
@@ -255,17 +259,18 @@ public class Level implements MouseMotionListener, ActionListener, MouseListener
       if (noOfColors > paletteRows * paletteCols) throw new Exception();
 
       colors = new Color[noOfColors];
-
       labels = new String[noOfColors];
-
       appearColors = new Color[noOfColors];
 
+      Simulator sim = new Simulator();
+      sim.simulate(cbType);
       for (int i = 0; i < noOfColors; i++){
         String[] tokens = in.readLine().split(" ");
         int red = Integer.parseInt(tokens[0]);
         int blue = Integer.parseInt(tokens[1]);
         int green = Integer.parseInt(tokens[2]);
         colors[i] = new Color(red, blue, green);
+        appearColors[i] = sim.filterColor(colors[i]);
         labels[i] = (tokens.length > 3)? tokens[3] : null;
       }
     }
@@ -279,12 +284,14 @@ public class Level implements MouseMotionListener, ActionListener, MouseListener
 
     //Create window
     createWindow();
+    addFilter();
 
+    if (openDialogText != null)
     JOptionPane.showMessageDialog(pictureFrame, openDialogText);
-
     clockTimer.start();
-    if (isLensUsable && !isLensInfinite){
-      lensTimer.start();
+
+    if (!isLensUsable){
+      lensButton.setEnabled(false);
     }
 
     try{
@@ -298,18 +305,22 @@ public class Level implements MouseMotionListener, ActionListener, MouseListener
       this.repaint();
       //When the user presses a top row GUI Button
       if (buttonPress == 0){
+        pictureFrame.dispose();
         return LEVELS;
       }
       else if (buttonPress == 1){
-        return results();
+        int action = results();
+        pictureFrame.dispose();
+        return action;
       }
       else if (buttonPress == 2){
+        pictureFrame.dispose();
         return RESTART;
       }
     }catch(Exception e){return -1;}
 
+    pictureFrame.dispose();
     return 0;
-
   }
 
   /**
@@ -319,6 +330,9 @@ public class Level implements MouseMotionListener, ActionListener, MouseListener
    * @return The action ID to execute once the level ends/is terminated
    */
   public int results(){
+    removeFilter();
+    lensTimer.stop();
+
     int correct = regions;
     for (int i = 0; i < regions; i++){
       Pixel p = picture.getPixel(regionPointsX[i], regionPointsY[i]);
@@ -326,7 +340,6 @@ public class Level implements MouseMotionListener, ActionListener, MouseListener
     }
 
     //Create dialog with options
-    //NEXT LEVEL
     //RESTART
     //LEVELS
     //MAIN MENU
@@ -338,7 +351,17 @@ public class Level implements MouseMotionListener, ActionListener, MouseListener
     String[] options = {"Levels", "Restart Level", "Main Menu"};
     int[] values = {LEVELS, RESTART, MAIN_MENU};
     ButtonMenu menu = new ButtonMenu(200, 100, ButtonMenu.VERTICAL_BOX, options, values, 1);
-    menu.setText(resultsText);
+
+    if (endDialogText == null){
+      String menuText = "<html>" + resultsText + "</html>";
+      menu.setText(menuText);
+    }
+    else{
+      //Note: "<HTML>" is the first six characters. Cut off the html tag starting from index 6.
+      String menuText = "<html>" + resultsText;
+      menuText += endDialogText.substring(6); //endDialogText has a <html> tag (cut off) and an </html> tag included
+      menu.setText(menuText);
+    }
     resultsDialog.setDefaultCloseOperation (JDialog.DO_NOTHING_ON_CLOSE);
     resultsDialog.getContentPane ().add (menu);
 
@@ -363,6 +386,7 @@ public class Level implements MouseMotionListener, ActionListener, MouseListener
     resultsDialog.setModal (true);  //setModal pauses current execution until the JDialog is closed
     resultsDialog.setLocationRelativeTo (pictureFrame);
     resultsDialog.setVisible (true);
+
     //Get the option that is chosen in the dialog and return it
     return menu.getSelectedValue();
   }
@@ -428,8 +452,6 @@ public class Level implements MouseMotionListener, ActionListener, MouseListener
     topRow.add(submitButton);
     topRow.add(regionsLabelPanel);
     topRow.add(resetButton);
-
-
     
     //creates the scrollpane for the picture
     scrollPane = new JScrollPane();
@@ -441,9 +463,41 @@ public class Level implements MouseMotionListener, ActionListener, MouseListener
     imageDisplay.setToolTipText("Click on the image to fill the region with a selected colour.");
     scrollPane.setViewportView(imageDisplay);
 
-    //Adds lens and palette
+    //Add lens and lens timer to palette
+    JPanel lensBox = new JPanel();
+    lensBox.setLayout(new BorderLayout());
+    lensBox.setAlignmentY(JPanel.CENTER_ALIGNMENT);
+    lensButton = new JButton("");
+    Dimension lensD = new Dimension(80, 80);
+    lensButton.setPreferredSize(lensD);
+    lensButton.setMinimumSize(lensD);
+    lensButton.setMaximumSize(lensD);
+    lensButton.setActionCommand("LENS BUTTON PRESS");
+    lensButton.addActionListener(this);
+    try{
+      Image lensImage = ImageIO.read(new File(FileChooser.getMediaPath("magGlassIcon80.png")));
+      Image lensImagePressed = ImageIO.read(new File(FileChooser.getMediaPath("magGlassIcon80_PRESSED.png")));
+      lensIcon = new ImageIcon(lensImage);
+      lensIconPressed = new ImageIcon(lensImagePressed);
+      lensButton.setIcon(lensIcon);
+    }catch(Exception e){
+      System.out.println("Lens button icon not found");
+      lensButton.setText("Lens");
+    }
+    lensTimeLabel = new JLabel(Integer.toString(lensTime/10));
+    lensTimeLabel.setHorizontalAlignment(JLabel.CENTER);
+    if (!isLensUsable) lensTimeLabel.setText("Lens Disabled");
+    else if (isLensInfinite) lensTimeLabel.setText("Infinite Lens");
+    lensBox.add(lensButton, BorderLayout.CENTER);
+    lensBox.add(lensTimeLabel, BorderLayout.SOUTH);
+    //Add the palette box to the palette
+    palette.add(lensBox, 0);
+    palette.add(Box.createRigidArea(new Dimension(20, 0)), 1);
+    palette.revalidate();
+
+    //Adds palette to JPanel
     JPanel paletteBox = new JPanel();
-    paletteBox.setLayout(new BoxLayout(paletteBox, BoxLayout.X_AXIS));
+    paletteBox.setLayout(new FlowLayout());
     paletteBox.setAlignmentX(JPanel.CENTER_ALIGNMENT);
     paletteBox.setAlignmentY(JPanel.CENTER_ALIGNMENT);
     paletteBox.add(palette);
@@ -555,6 +609,8 @@ public class Level implements MouseMotionListener, ActionListener, MouseListener
   public void mouseClicked(MouseEvent e)
   {
     fill(e.getX(), e.getY());
+    if (!lensTimer.isRunning())
+      imageDisplay.setImage(createFilteredImage(picture.getBufferedImage(), cbType));
   }
   
   /**
@@ -604,34 +660,49 @@ public class Level implements MouseMotionListener, ActionListener, MouseListener
       if (lensTime == 0){
         lensTimer.stop();
         isLensUsable = false;
-        //Set lens button inactive
-        imageDisplay.setImage(filteredPic.getBufferedImage());
+        lensButton.setEnabled(false);
+        imageDisplay.setImage(createFilteredImage(picture.getBufferedImage(), cbType));
         this.repaint();
       }
+      lensTimeLabel.setText(Integer.toString(lensTime/10));
+      lensTimeLabel.repaint();
+    }
+    else if (action.equals("LENS BUTTON PRESS")){
+      if (lensTimer.isRunning())
+        addFilter();
+      else
+        removeFilter();
     }
     else if (action.equals("REMOVE FILTER")){
-      //Change image displayed to picture
-      //Change button colours to true color
-      if (isLensUsable == true){
-        imageDisplay.setImage(picture.getBufferedImage());
-        palette.changeButtonsToButtonColor();
-        lensTimer.start();
-        this.repaint();
-      }
+      removeFilter();
     }
     else if (action.equals("ADD FILTER")){
-      //Change image displayed to filteredPic
-      //Change button colours to filtered color
-      lensTimer.stop();
-      imageDisplay.setImage(filteredPic.getBufferedImage());
-      palette.changeButtonsToAppearColor();
-      this.repaint();
+      addFilter();
     }
-
     //Exit commands
     else if (action.equals("BACK TO LEVELS")) buttonPress = 0;
     else if (action.equals("SUBMIT")) buttonPress = 1;
     else if (action.equals("RESET")) buttonPress = 2;
+  }
+
+  public void removeFilter(){
+    //Change image displayed to picture
+    //Change button colours to true color
+    imageDisplay.setImage(picture.getBufferedImage());
+    lensButton.setIcon(lensIconPressed);
+    palette.changeButtonsToButtonColor();
+    lensTimer.start();
+    this.repaint();
+  }
+
+  public void addFilter(){
+    //Change image displayed to filteredPic
+    //Change button colours to filtered color
+    lensTimer.stop();
+    lensButton.setIcon(lensIcon);
+    imageDisplay.setImage(createFilteredImage(picture.getBufferedImage(), cbType));
+    palette.changeButtonsToAppearColor();
+    this.repaint();
   }
 
   /**
@@ -666,5 +737,12 @@ public class Level implements MouseMotionListener, ActionListener, MouseListener
     filteredBF.getGraphics().drawImage(normalBF, 0, 0, null);
     filteredBF = sim.filter(filteredBF);
     return filteredBF;
+  }
+
+  public void setLensButtonActive(boolean flag){
+    if (flag)
+      lensButton.setEnabled(true);
+    else
+      lensButton.setEnabled(false);
   }
 }
