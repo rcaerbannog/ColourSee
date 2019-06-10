@@ -1,17 +1,47 @@
-2
 4
 8
-0 0 0 0
-0 32 0 test
-0 64 0 2
-0 96 0 3
-0 128 0 4
-0 160 0
-0 192 0 6
-0 224 0 7
+32
+0 0 0
+255, 255, 255
+165, 42, 42
+255, 0, 0
+255, 165, 0
+0, 128, 0
+255, 255, 0
+128,0,128
 
 COMMENTS
 Line 1: palette rows
 Line 2: palette columns
 Line 3: number of colours on palette
 Line 4 onwards: Colors on the palette (RGB), label, alt colour
+
+GRAYSCALE
+0, 0, 0
+
+255, 255, 255
+REDS
+255, 0, 0 (rust)
+255, 165, 0 (orange)
+
+GREENS
+0, 128, 0
+
+BLUES
+0, 0, 255
+
+YELLOWS
+255, 255, 0
+MAGENTAS
+128,0,128
+
+CYANS
+165, 42, 42
+
+
+
+
+
+
+
+

@@ -18,12 +18,11 @@ import java.util.ArrayList;
 public class SplashScreen implements ActionListener {
 
     private JFrame window = new JFrame ("ColourSee");
-    private JPanel panel = new JPanel();
 
     private JPanel howToPane;
     private JPanel menuPane;
-    private ArrayList<World> levelSelectWorlds;
-    private int selectedWorld = 0;
+    //private ArrayList<World> levelSelectWorlds;
+    //private int selectedWorld = 0;
 
     private String playerCBType;
 
@@ -59,15 +58,18 @@ public class SplashScreen implements ActionListener {
         gbc.weighty = 1;
 
         changePanel(menuPane);
-        window.add(panel);
+        window.setContentPane(menuPane);
 
-        generateLevelSelect();
+        //Add how to play pane
+        //JScrollPane, JTextArea
+
 
         window.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         window.setSize(650, 400);
         window.setVisible(true);
     }
 
+    /*
     public void generateLevelSelect(){
         levelSelectWorlds = new ArrayList<World>();
         try{
@@ -117,7 +119,7 @@ public class SplashScreen implements ActionListener {
                         levelSelectPanel.addLevel(name, "unlocked");
                         prevLevelCompleted = false;
                     }
-                    */
+
                     levelButton.setPreferredSize(levelButtonD);
                     levelButton.setMinimumSize(levelButtonD);
                     levelButton.setMaximumSize(levelButtonD);
@@ -153,6 +155,7 @@ public class SplashScreen implements ActionListener {
 
         }catch(Exception e){e.printStackTrace();}
     }
+    */
 
     @Override
     public void actionPerformed(ActionEvent actionEvent) {
@@ -164,13 +167,13 @@ public class SplashScreen implements ActionListener {
         else if (action.equals("Start")){
             //Implement reading options.txt later, if time allows
             playerCBType = "normal";
-            selectedWorld = 0;
-            changePanel(levelSelectWorlds.get(selectedWorld));
+
         }
         else if (action.equals("How to Play"))
             changePanel(howToPane);
         else if (action.equals("MAIN MENU"))
             changePanel(menuPane);
+        /*
         else if (action.equals("PREVIOUS WORLD")){
             selectedWorld--;
             changePanel(levelSelectWorlds.get(selectedWorld));
@@ -206,11 +209,12 @@ public class SplashScreen implements ActionListener {
             else{
                 changePanel(menuPane);
             }
-        }
+        } */
     }
 
+
     public void changePanel(JPanel newPanel){
-        panel = newPanel;
+        window.setContentPane(newPanel);
         window.revalidate();
         window.repaint();
     }

@@ -13,6 +13,4 @@ World 3: Applying
 3-2 #SCORE locked
 3-3 #SCORE locked
 
-Custom Levels
-
 <EOF>
