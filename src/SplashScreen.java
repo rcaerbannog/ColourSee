@@ -134,7 +134,6 @@ public class SplashScreen implements ActionListener {
             {
                 Level level = new Level();
                 level.runGame(actionEvent.getActionCommand());
-                cardLayout.first(contentPane);
             }
         }
     }
