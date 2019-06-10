@@ -20,7 +20,7 @@ public class TestMenuDialog extends JFrame
         setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
         setVisible(true);
 
-        JDialog resultsDialog = new JDialog (this, "Results");
+        final JDialog resultsDialog = new JDialog (this, "Results");
 
         int correct = 3;
         int regions = 4;

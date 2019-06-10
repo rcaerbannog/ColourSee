@@ -260,14 +260,14 @@ public class Level implements MouseMotionListener, ActionListener, MouseListener
     //RESTART
     //LEVELS
     //MAIN MENU
-    JDialog resultsDialog = new JDialog (pictureFrame, "Results");
+    final JDialog resultsDialog = new JDialog (pictureFrame, "Results");
 
     String resultsText = ("You got " + correct + "/" + regions + " correct");
 
     //These buttons could also be used for a general level thing
     String[] options = {"Levels", "Restart Level", "Main Menu"};
     int[] values = {LEVELS, RESTART, MAIN_MENU};
-    ButtonMenu menu = new ButtonMenu(200, 100, ButtonMenu.VERTICAL_BOX, options, values, 1);
+    final ButtonMenu menu = new ButtonMenu(200, 100, ButtonMenu.VERTICAL_BOX, options, values, 1);
     menu.setText(resultsText);
     resultsDialog.setDefaultCloseOperation (JDialog.DO_NOTHING_ON_CLOSE);
     resultsDialog.getContentPane ().add (menu);
