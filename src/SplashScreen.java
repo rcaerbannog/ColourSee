@@ -106,6 +106,7 @@ public class SplashScreen implements ActionListener {
         window.setSize(650, 400);
         window.setLocationByPlatform(true);
         window.setVisible(true);
+        window.setResizable(false);
     }
 
     @Override
