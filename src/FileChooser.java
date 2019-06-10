@@ -33,34 +33,49 @@ public class FileChooser
   }
 
   /**
-   * Method to get the path of the level directory
+   * Method to get the path of a level's directory within the levels folder
    * @return the path of the level directory
    */
-  public static String getLevelDirectory(String level)
-  {
-    String path = "../levels/" + level + "/";
-    String directory = null;
-    boolean done = false;
-    File dirFile = null;
+  public static String getLevelDirectory(String level){
+    String path = null;
+    String directory = getLevelsFolder();
+    boolean done = true;
 
-    // try to find the images directory
-    try {
-      // get the URL for where we loaded this class
-      Class currClass = Class.forName("Level");
-      URL classURL = currClass.getResource("Level.class");
-      URL fileURL = new URL(classURL,path);
-      directory = fileURL.getPath();
-      directory = URLDecoder.decode(directory, "UTF-8");
-      dirFile = new File(directory);
-      if (dirFile.exists()) {
-        //setMediaPath(directory);
-        return directory;
-      }
-    } catch (Exception ex) {
-    }
-
-    return directory;
+    // get the full path
+    path = directory + level + "/";
+    return path;
   }
+
+  /**
+ * Method to get the path of the level directory
+ * @return the path of the levels folder
+ */
+public static String getLevelsFolder()
+{
+  String path = "../levels/";
+  String directory = null;
+  boolean done = false;
+  File dirFile = null;
+
+  // try to find the levels directory
+  try {
+    // get the URL for where we loaded this class
+    Class currClass = Class.forName("Level");
+    URL classURL = currClass.getResource("Level.class");
+    URL fileURL = new URL(classURL,path);
+    directory = fileURL.getPath();
+    directory = URLDecoder.decode(directory, "UTF-8");
+    dirFile = new File(directory);
+    if (dirFile.exists()) {
+      //setMediaPath(directory);
+      return directory;
+    }
+  } catch (Exception ex) {
+  }
+
+  return directory;
+}
+
 
   /**
    * Method to pick an item using the file chooser

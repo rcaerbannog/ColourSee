@@ -1,0 +1,3 @@
+FIRST_PLAY true
+PLAYER_CB_TYPE normal
+GAME_CB_TYPE normal

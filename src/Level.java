@@ -1,5 +1,3 @@
-import graphics.ButtonMenu;
-
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.*;
@@ -36,7 +34,7 @@ public class Level implements MouseMotionListener, ActionListener, MouseListener
 
   private int regions;
 
-  private int result; //Can be 0, 1, 2, or 3 in this game
+  private int result = 0; //Can be 0, 1, 2, or 3 in this game
 
   private String openDialogText;
 
@@ -296,7 +294,7 @@ public class Level implements MouseMotionListener, ActionListener, MouseListener
 
     try{
       //While no action has been taken to end the level
-      while (buttonPress == -1){
+      while (buttonPress == -1 && pictureFrame.isVisible()){
         Thread.sleep(10);
       }
       clockTimer.stop();
@@ -318,7 +316,6 @@ public class Level implements MouseMotionListener, ActionListener, MouseListener
         return RESTART;
       }
     }catch(Exception e){return -1;}
-
     pictureFrame.dispose();
     return 0;
   }
@@ -344,6 +341,9 @@ public class Level implements MouseMotionListener, ActionListener, MouseListener
     //LEVELS
     //MAIN MENU
     JDialog resultsDialog = new JDialog (pictureFrame, "Results");
+
+    //Arbitrary limit: if 75% of regions are coloured properly, the level is complete
+    result = ((double) correct / regions >= 0.75)? 1 : 0;
 
     String resultsText = ("You got " + correct + "/" + regions + " correct");
 
@@ -411,7 +411,7 @@ public class Level implements MouseMotionListener, ActionListener, MouseListener
     pictureFrame = new JFrame(); // create the JFrame
     pictureFrame.setResizable(false);  // allow the user to resize it
     pictureFrame.getContentPane().setLayout(new BorderLayout(10, 10)); // use border layout
-    pictureFrame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE); // when close stop the program
+    pictureFrame.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE); // when close stop the program
     pictureFrame.setTitle(picture.getTitle());
 
     //Creates the GUI on top
@@ -739,10 +739,7 @@ public class Level implements MouseMotionListener, ActionListener, MouseListener
     return filteredBF;
   }
 
-  public void setLensButtonActive(boolean flag){
-    if (flag)
-      lensButton.setEnabled(true);
-    else
-      lensButton.setEnabled(false);
+  public int getResult(){
+    return result;
   }
 }
